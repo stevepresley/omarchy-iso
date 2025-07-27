@@ -7,6 +7,13 @@ This will create an ISO that does two things:
 
 # Build instructions
 
+First, get the submodules (archiso):
+```
+$ git submodule update --remote --merge
+```
+
+Then build the ISO in a docker container using the arch image as the foundation:
+
 ```
 $ docker run --rm \
 	--privileged \
