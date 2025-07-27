@@ -10,6 +10,7 @@ pacman --noconfirm -Sy archiso git
 # As a base example (the TUI packages needs to be here)
 packages=(
 	git
+	impala
 )
 
 cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso_$(date +%Y-%m-%d))
