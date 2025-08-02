@@ -66,7 +66,7 @@ cp -r archiso/configs/releng/* $cache_dir/
 
 # We clone the installer, and move it to the root users home folder
 # since this is the default user in the official releng ISO profile.
-git clone -b fix-networking --single-branch https://github.com/Torxed/omarchy-installer "$cache_dir/airootfs/root/omarchy-installer"
+git clone -b archinstall-syntax --single-branch https://github.com/Torxed/omarchy-installer "$cache_dir/airootfs/root/omarchy-installer"
 mv "$cache_dir/airootfs/root/omarchy-installer/installer" "$cache_dir/airootfs/root/installer"
 mv "$cache_dir/airootfs/root/omarchy-installer/logo.txt" "$cache_dir/airootfs/root/logo.txt"
 rm -rf "$cache_dir/airootfs/root/omarchy-installer"
@@ -81,7 +81,7 @@ cat <<- _EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
 	#!/usr/bin/env bash
 
 	if [[ \$(tty) == "/dev/tty1" ]]; then
-	    sh ./check_connectivity.sh && sh ./installer
+	    sh ./check_connectivity.sh && sh ./installer && archinstall --config user_configuration.json --creds user_credentials.json --silent
 	fi
 _EOF_
 
