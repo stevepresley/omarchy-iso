@@ -19,9 +19,10 @@ mkdir -p $cache_dir/
 cp -r archiso/configs/releng/* $cache_dir/
 
 # We add in our auto-start applications
-# We'll assume the TUI installer is called omarchy-tui for now
+# First we'll check for an active internet connection
+# Then we'll start omarchy-tui
 cat <<- _EOF_ | tee $cache_dir/airootfs/root/.zprofile
-	omarchy-tui
+	check_connectivity.sh && omarchy-tui
 _EOF_
 
 # Add packages to the archiso profile packages
