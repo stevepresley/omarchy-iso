@@ -1,0 +1,10 @@
+--- a/pacman.conf
++++ b/pacman.conf
+@@ -98,3 +98,7 @@
+ #[custom]
+ #SigLevel = Optional TrustAll
+ #Server = file:///home/custompkgs
++
++[aur]
++SigLevel = Optional TrustAll
++Server = file:///var/cache/omarchy/mirror/aur/

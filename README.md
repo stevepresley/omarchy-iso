@@ -21,6 +21,10 @@ $ docker run --rm \
 	-v "./build_iso.sh:/build_iso.sh:ro" \
 	-v "./archiso:/archiso:ro" \
 	-v "./grub-autoboot.patch:/grub-autoboot.patch:ro" \
+	-v "./efi-autoboot.patch:/efi-autoboot.patch:ro" \
+	-v "./permissions.patch:/permissions.patch:ro" \
+	-v "./aur-mirror.patch:/aur-mirror.patch:ro" \
+	-v "./check_connectivity.sh:/check_connectivity.sh:ro" \
 	archlinux/archlinux:latest /build_iso.sh
 ```
 
