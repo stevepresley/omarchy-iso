@@ -26,6 +26,7 @@ arch_packages=(
 	impala
 	gum
 	openssl
+	wget
 )
 # These are Python specific packages that will get installed
 # onto the ISO
@@ -87,7 +88,13 @@ cat <<- _EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
 	#!/usr/bin/env bash
 
 	if [[ \$(tty) == "/dev/tty1" ]]; then
-	    sh ./check_connectivity.sh && sh ./installer && archinstall --config user_configuration.json --creds user_credentials.json --silent
+	    sh ./check_connectivity.sh && \
+	    sh ./installer && \
+	    archinstall \
+	    	--config user_configuration.json \
+	    	--creds user_credentials.json \
+	    	--silent && \
+	    wget -qO- https://omarchy.org/install | bash
 	fi
 _EOF_
 
