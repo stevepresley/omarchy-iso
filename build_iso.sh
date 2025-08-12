@@ -58,6 +58,12 @@ build_aur() {
 	USERGROUPS_ENAB=yes userdel aurbuilder
 }
 
+set_geo_mirror() {
+	# https://geo.mirror.pkgbuild.com/
+	rm "$cache_dir/airootfs/etc/pacman.d/hooks/uncomment-mirrors.hook"
+	echo "Server = $1" > "$cache_dir/airootfs/etc/pacman.d/mirrorlist"
+}
+
 mkdir -p $cache_dir/
 mkdir -p $aur_cache_dir/
 
@@ -123,5 +129,7 @@ rm "$cache_dir/airootfs/etc/motd"
 # Install Python packages for the installer into the ISO
 # file system.
 pip install "${python_packages[@]}"
+
+set_geo_mirror "https://geo.mirror.pkgbuild.com/"
 
 mkarchiso -v -w "$cache_dir/work/" -o "/out/" "$cache_dir/"
