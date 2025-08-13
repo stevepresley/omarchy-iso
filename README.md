@@ -25,6 +25,8 @@ $ docker run --rm \
 	-v "./permissions.patch:/permissions.patch:ro" \
 	-v "./aur-mirror.patch:/aur-mirror.patch:ro" \
 	-v "./check_connectivity.sh:/check_connectivity.sh:ro" \
+	-v "./omarchy.packages:/omarchy.packages:ro" \
+	-v "./archinstall.packages:/archinstall.packages:ro" \
 	archlinux/archlinux:latest /build_iso.sh
 ```
 
