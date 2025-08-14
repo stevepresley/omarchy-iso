@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+
+BUILD_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+mkdir -p "$BUILD_ROOT/out"
+
+docker run --rm \
+  --privileged \
+  -v "$BUILD_ROOT/out:/out" \
+  -v "$BUILD_ROOT/build_iso.sh:/build_iso.sh:ro" \
+  -v "$BUILD_ROOT/archiso:/archiso:ro" \
+  -v "$BUILD_ROOT/grub-autoboot.patch:/grub-autoboot.patch:ro" \
+  -v "$BUILD_ROOT/efi-autoboot.patch:/efi-autoboot.patch:ro" \
+  -v "$BUILD_ROOT/permissions.patch:/permissions.patch:ro" \
+  -v "$BUILD_ROOT/aur-mirror.patch:/aur-mirror.patch:ro" \
+  -v "$BUILD_ROOT/check_connectivity.sh:/check_connectivity.sh:ro" \
+  archlinux/archlinux:latest /build_iso.sh
+
+# Make iso accessible to all
+sudo chmod 777 -R "$BUILD_ROOT/out"
