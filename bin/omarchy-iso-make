@@ -1,9 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
+# Get the latest
+git pull
+git submodule update --init --recursive --jobs=8
+
+# Prepare build repo
 BUILD_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 mkdir -p "$BUILD_ROOT/out"
 
+# Run the builder
 docker run --rm \
   --privileged \
   -v "$BUILD_ROOT/out:/out" \
