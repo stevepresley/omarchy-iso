@@ -130,11 +130,11 @@ cat <<- _EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
 	    	--config user_configuration.json \
 	    	--creds user_credentials.json \
 	    	--silent && \
-	    export OMARCHY_USER=\$(ls /home/) && \
-	    mkdir -p /home/\$OMARCHY_USER/.local/share/ && \
-	    cp -r /root/omarchy "/home/\$OMARCHY_USER/.local/share/" && \
-	    chown -R \$OMARCHY_USER: "/home/\$OMARCHY_USER//.local/" \
-	    su - \$OMARCHY_USER -c "source /home/\$OMARCHY_USER/.local/share/omarchy/install.sh"
+	    export OMARCHY_USER=\$(ls /mnt/home/) && \
+	    mkdir -p /mnt/home/\$OMARCHY_USER/.local/share/ && \
+	    cp -r /root/omarchy "/mnt/home/\$OMARCHY_USER/.local/share/" && \
+	    chown -R \$OMARCHY_USER: "/mnt/home/\$OMARCHY_USER/.local/" \
+	    arch-chroot -u \$OMARCHY_USER /mnt/ "source ~/.local/share/omarchy/install.sh"
 	fi
 _EOF_
 
