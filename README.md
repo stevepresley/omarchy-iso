@@ -24,7 +24,10 @@ $ docker run --rm \
 	-v "./efi-autoboot.patch:/efi-autoboot.patch:ro" \
 	-v "./permissions.patch:/permissions.patch:ro" \
 	-v "./aur-mirror.patch:/aur-mirror.patch:ro" \
+	-v "./offline-mirror.patch:/offline-mirror.patch:ro" \
 	-v "./check_connectivity.sh:/check_connectivity.sh:ro" \
+	-v "./omarchy.packages:/omarchy.packages:ro" \
+	-v "./archinstall.packages:/archinstall.packages:ro" \
 	archlinux/archlinux:latest /build_iso.sh
 ```
 

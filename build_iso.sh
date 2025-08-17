@@ -6,10 +6,10 @@ set -e
 # used to build the ISO.
 pacman-key --init
 pacman --noconfirm -Sy archlinux-keyring
-pacman --noconfirm -Sy archiso git python-pip sudo base-devel
+pacman --noconfirm -Sy archiso git python-pip sudo base-devel jq wget
 
 cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso_$(date +%Y-%m-%d))
-aur_cache_dir="/var/cache/omarchy/mirror/aur"
+offline_mirror_dir="$cache_dir/airootfs/var/cache/omarchy/mirror/offline"
 
 # We need to fiddle with pip settings
 # in order to install to the correct place
@@ -19,57 +19,88 @@ export PIP_ROOT_USER_ACTION="ignore"
 export PIP_NO_WARN_SCRIPT_LOCATION=1
 export PIP_BREAK_SYSTEM_PACKAGES=1
 
-# Arch packages to add to the archiso profile packages
-# As a base example (the TUI packages needs to be here)
+# These packages will be installed **into** the ISO, and
+# won't be available to either archinstall or omarchy installer.
+python_packages=(
+	terminaltexteffects
+)
 arch_packages=(
 	git
 	impala
 	gum
 	openssl
 	wget
-)
-# These are Python specific packages that will get installed
-# onto the ISO
-python_packages=(
-	terminaltexteffects
-)
-aur_packages=(
-	tzupdate
+	tzupdate # This is technically an AUR package
 )
 
-build_aur() {
-	PACKAGE=$1
-	BUILDDEST=$2
+prepare_offline_mirror() {
+	# Certain packages in omarchy.packages are AUR packages.
+	# These needs to be pre-built and placed in https://omarchy.blyg.se/aur/os/x86_64/
+	echo "Reading and combining packages from all package files..."
+	
+	# Combine all packages from both files into one array
+	all_packages=()
+	for package_file in omarchy.packages archinstall.packages; do
+		if [ -f "$package_file" ]; then
+			echo "Reading $package_file..."
+			while IFS= read -r package; do
+				# Skip empty lines and comments
+				[[ -z "$package" || "$package" =~ ^[[:space:]]*# ]] && continue
+				all_packages+=("$package")
+			done < "$package_file"
+		fi
+	done
 
-	mkdir -p /etc/sudoers.d/
-	useradd --create-home --shell /bin/bash aurbuilder
-	echo "aurbuilder ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/aurbuilder
+	if [ ${#all_packages[@]} -gt 0 ]; then
+		# This assume we've manually built all the AUR packages
+		# and made them accessible "online" during the build process:
+		(cd $cache_dir/ && git apply /aur-mirror.patch)
 
-	sudo -H -u aurbuilder git clone "https://aur.archlinux.org/$1.git" "/home/aurbuilder/$1"
+		mkdir -p /tmp/offlinedb
+		
+		# Change DownloadUser from alpm to root to fix permission issues when downloading to cache dir
+		# TODO: We should move the build root from /root/.cache/omarchy/ into /var/cache instead.
+		#       That way alpm:alpm will have access, which is the default pacman download user now days.
+		sed -i 's/^#*DownloadUser = alpm/DownloadUser = root/' /etc/pacman.conf
 
-	# TODO: We should add --sign here, to sign these packages
-	# with a key that we trust and want to use. It's only used internally in the ISO.
-	# but it would make sure we don't install unsigned packages even during our build process.
-	(cd "/home/aurbuilder/$1" && sudo -H -u aurbuilder makepkg --clean --cleanbuild --force --noconfirm --needed --syncdeps --rmdeps)
-	mv "/home/aurbuilder/$1/"*.pkg.tar.zst "$BUILDDEST/"
+		# Download all the packages to the offline mirror inside the ISO
+		pacman --config $cache_dir/pacman.conf \
+			--noconfirm -Syw "${all_packages[@]}" \
+			--cachedir $offline_mirror_dir/ \
+			--dbpath /tmp/offlinedb
+		
+		repo-add --new "$offline_mirror_dir/offline.db.tar.gz" "$offline_mirror_dir/"*.pkg.tar.zst
 
-	rm -rf "/home/aurbuilder/$1"
-
-	rm /etc/sudoers.d/aurbuilder
-	USERGROUPS_ENAB=yes userdel aurbuilder
+		rm "$cache_dir/airootfs/etc/pacman.d/hooks/uncomment-mirrors.hook"
+		
+		# Revert the "online" AUR patch, as we'll replace it with the proper
+		# offline patched mirror for the ISO later.
+		(cd $cache_dir && git apply -R /aur-mirror.patch)
+	fi
 }
 
-set_geo_mirror() {
-	# https://geo.mirror.pkgbuild.com/
-	rm "$cache_dir/airootfs/etc/pacman.d/hooks/uncomment-mirrors.hook"
-	echo "Server = $1" > "$cache_dir/airootfs/etc/pacman.d/mirrorlist"
+make_archiso_offline() {
+	# This function will simply disable any online activity we have.
+	# for instance the reflector.service which tries to optimize
+	# mirror order by fetching the latest mirror list by default.
+	#
+	# We'll leave some things online, like NTP as that won't
+	# interfere with anything, on the flip side it will help if we do
+	# have internet connectivity.
+
+	rm "$cache_dir/airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
+	rm -rf "$cache_dir/airootfs/etc/systemd/system/reflector.service.d"
+	rm -rf "$cache_dir/airootfs/etc/xdg/reflector"
 }
 
 mkdir -p $cache_dir/
-mkdir -p $aur_cache_dir/
+mkdir -p $offline_mirror_dir/
 
 # We base our ISO on the official arch ISO (releng) config
 cp -r archiso/configs/releng/* $cache_dir/
+
+prepare_offline_mirror
+make_archiso_offline
 
 # We clone the installer, and move it to the root users home folder
 # since this is the default user in the official releng ISO profile.
@@ -77,6 +108,8 @@ git clone https://github.com/omacom-io/omarchy-installer "$cache_dir/airootfs/ro
 mv "$cache_dir/airootfs/root/omarchy-installer/installer" "$cache_dir/airootfs/root/installer"
 mv "$cache_dir/airootfs/root/omarchy-installer/logo.txt" "$cache_dir/airootfs/root/logo.txt"
 rm -rf "$cache_dir/airootfs/root/omarchy-installer"
+
+git clone -b dev --single-branch https://github.com/basecamp/omarchy.git "$cache_dir/airootfs/root/omarchy"
 
 # Copy in the connectivity check script
 cp /check_connectivity.sh "$cache_dir/airootfs/root/check_connectivity.sh"
@@ -94,31 +127,46 @@ cat <<- _EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
 	    	--config user_configuration.json \
 	    	--creds user_credentials.json \
 	    	--silent && \
-	    wget -qO- https://omarchy.org/install | bash
+	    export OMARCHY_USER=\`ls /mnt/home/\` && \
+
+	    mkdir -p /mnt/home/\$OMARCHY_USER/.local/share/ && \
+	    cp -r /root/omarchy "/mnt/home/\$OMARCHY_USER/.local/share/" && \
+	    chown -R 1000:1000 "/mnt/home/\$OMARCHY_USER/.local/" && \
+	    chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install.sh && \
+	    chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/apps/mimetypes.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/apps/webapps.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/apps/xtras.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/detect-keyboard-layout.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/fix-fkeys.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/network.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/nvidia.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/power.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/timezones.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/config.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/identification.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/increase-sudo-tries.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/login.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/asdcontrol.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/bluetooth.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/fonts.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/hyprlandia.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/printer.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/theme.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/desktop.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/development.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/nvim.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/ruby.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/docker.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/firewall.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/terminal.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/migrations.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/aur.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/guard.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/gum.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/tte.sh && \
+	    HOME=/home/\$OMARCHY_USER arch-chroot -u \$OMARCHY_USER /mnt/ /bin/bash -c "source /home/\$OMARCHY_USER/.local/share/omarchy/install.sh"
 	fi
 _EOF_
-
-# Add Arch packages to the archiso profile packages
-for package in "${arch_packages[@]}"; do
-	echo "$package" >> "$cache_dir/packages.x86_64"
-done
-
-# We have to build the AUR packages one by one
-# and place them in a local mirror for the ISO build process.
-# Otherwise the ISO won't be able to source them
-if [ ${#aur_packages[@]} -gt 0 ]; then
-	for package in "${aur_packages[@]}"; do
-		if build_aur "$package" "$aur_cache_dir/"; then
-			echo "$package" >> "$cache_dir/packages.x86_64"
-		fi
-	done
-
-	ls -l "$aur_cache_dir/"
-	repo-add --new "$aur_cache_dir/aur.db.tar.gz" "$aur_cache_dir/"*.pkg.tar.zst
-
-	# And patch in the mirror to the pacman.conf to include our AUR repo
-	(cd $cache_dir/ && git apply /aur-mirror.patch)
-fi
 
 # We patch permissions, grub and efi loaders to our liking:
 (cd $cache_dir/ && git apply /permissions.patch)
@@ -137,6 +185,38 @@ rm "$cache_dir/airootfs/etc/motd"
 # file system.
 pip install "${python_packages[@]}"
 
-set_geo_mirror "https://geo.mirror.pkgbuild.com/"
+# Add our needed packages to packages.x86_64
+printf '%s\n' "${arch_packages[@]}" >> "$cache_dir/packages.x86_64"
 
+# We have to do this, because `mkarchiso` copies in the pacman.conf
+# in use during the build process - so it needs to be made offline.
+(cd "$cache_dir" && git apply /offline-mirror.patch)
+cp $cache_dir/pacman.conf "$cache_dir/airootfs/etc/pacman.conf"
+
+# And we also need to duplicate the offline mirror.
+# Because inside the ISO it will look for packages in /var/cache/omarchy/mirror/offline
+# but that means the build of the ISO itself will also look at this location
+# but in the container.
+mkdir -p /var/cache/omarchy/mirror
+cp -r "$offline_mirror_dir" "/var/cache/omarchy/mirror/"
+
+# Because this weird glitch with archiso, we also need to sync down
+# all the packages we need to build the ISO, but we'll do that in the
+# "host" mirror location, as we don't want them inside the ISO taking up space.
+# We'll also remove tzupdate as it won't be found in upstream mirrors.
+iso_packages=($(cat "$cache_dir/packages.x86_64"))
+
+mkdir -p /tmp/cleandb
+
+echo "Populating host offline mirror with ISO packages: ${iso_packages[@]}"
+# And we have to use the hosts pacman.conf since all other pacman.conf
+# files are prepped for offline use by this point.
+pacman --config /etc/pacman.conf \
+    --noconfirm -Syw $(echo "${iso_packages[@]}" | sed 's/tzupdate//g') \
+    --cachedir "/var/cache/omarchy/mirror/offline/" \
+    --dbpath /tmp/cleandb
+
+repo-add --new "/var/cache/omarchy/mirror/offline/offline.db.tar.gz" "/var/cache/omarchy/mirror/offline/"*.pkg.tar.zst
+
+# Finally, we assemble the entire ISO
 mkarchiso -v -w "$cache_dir/work/" -o "/out/" "$cache_dir/"
