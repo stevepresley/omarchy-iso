@@ -52,7 +52,7 @@ iwd
 jq
 kdenlive
 kvantum-qt5
-lazydocker-bin
+lazydocker
 lazygit
 less
 libpulse
@@ -61,7 +61,7 @@ libreoffice-fresh
 linux
 linux-firmware
 llvm
-localsend-bin
+localsend
 luarocks
 mako
 man-db
@@ -76,9 +76,9 @@ noto-fonts-emoji
 noto-fonts-extra
 nss-mdns
 obs-studio
-obsidian-bin
+obsidian
 pamixer
-pinta
+# pinta
 pipewire
 pipewire-alsa
 pipewire-jack
@@ -110,7 +110,7 @@ ufw
 ufw-docker
 unzip
 uwsm
-walker-bin
+walker
 waybar
 wget
 whois
@@ -125,9 +125,16 @@ xdg-desktop-portal-hyprland
 xmlstarlet
 xournalpp
 yaru-icon-theme
-yay-bin
-# TODO: Figure out how to dynamically find, build, and install -debug packages
-# yay-bin-debug
+yay
+yay-debug
 zoom
 zoxide
 zram-generator
+webp-pixbuf-loader
+autoconf-archive
+intltool
+gtk4-layer-shell
+sassc
+libsass
+dart
+qt5-remoteobjects
