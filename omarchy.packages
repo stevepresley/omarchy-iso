@@ -138,3 +138,12 @@ sassc
 libsass
 dart
 qt5-remoteobjects
+dust
+starship
+limine
+limine-mkinitcpio-hook
+limine-snapper-sync
+snapper
+# the limine hook and sync needed
+# JDK17 to build, maybe a runtime dep too?
+# java-17-openjdk
