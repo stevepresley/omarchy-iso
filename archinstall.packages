@@ -26,3 +26,4 @@ vulkan-radeon
 vulkan-intel
 vulkan-nouveau
 sddm
+efibootmgr
