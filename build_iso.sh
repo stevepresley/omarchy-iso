@@ -57,9 +57,6 @@ prepare_offline_mirror() {
 		(cd $cache_dir/ && git apply /aur-mirror.patch)
 
 		mkdir -p /tmp/offlinedb
-
-		echo "$cache_dir/"
-		ls -l "$cache_dir/"
 		
 		# Change DownloadUser from alpm to root to fix permission issues when downloading to cache dir
 		# TODO: We should move the build root from /root/.cache/omarchy/ into /var/cache instead.
@@ -130,11 +127,44 @@ cat <<- _EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
 	    	--config user_configuration.json \
 	    	--creds user_credentials.json \
 	    	--silent && \
-	    export OMARCHY_USER=\$(ls /mnt/home/) && \
+	    export OMARCHY_USER=\`ls /mnt/home/\` && \
+
 	    mkdir -p /mnt/home/\$OMARCHY_USER/.local/share/ && \
 	    cp -r /root/omarchy "/mnt/home/\$OMARCHY_USER/.local/share/" && \
-	    chown -R \$OMARCHY_USER: "/mnt/home/\$OMARCHY_USER/.local/" \
-	    arch-chroot -u \$OMARCHY_USER /mnt/ "source ~/.local/share/omarchy/install.sh"
+	    chown -R 1000:1000 "/mnt/home/\$OMARCHY_USER/.local/" && \
+	    chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install.sh && \
+	    chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/apps/mimetypes.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/apps/webapps.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/apps/xtras.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/detect-keyboard-layout.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/fix-fkeys.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/network.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/nvidia.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/power.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/timezones.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/config.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/identification.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/increase-sudo-tries.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/login.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/asdcontrol.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/bluetooth.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/fonts.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/hyprlandia.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/printer.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/theme.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/desktop.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/development.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/nvim.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/ruby.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/docker.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/firewall.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/terminal.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/migrations.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/aur.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/guard.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/gum.sh && \
+		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/tte.sh && \
+	    HOME=/home/\$OMARCHY_USER arch-chroot -u \$OMARCHY_USER /mnt/ /bin/bash -c "source /home/\$OMARCHY_USER/.local/share/omarchy/install.sh"
 	fi
 _EOF_
 
