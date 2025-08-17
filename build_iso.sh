@@ -112,7 +112,7 @@ mv "$cache_dir/airootfs/root/omarchy-installer/installer" "$cache_dir/airootfs/r
 mv "$cache_dir/airootfs/root/omarchy-installer/logo.txt" "$cache_dir/airootfs/root/logo.txt"
 rm -rf "$cache_dir/airootfs/root/omarchy-installer"
 
-git clone -b dev git@github.com:basecamp/omarchy.git "$cache_dir/airootfs/root/omarchy"
+git clone -b dev --single-branch https://github.com/basecamp/omarchy.git "$cache_dir/airootfs/root/omarchy"
 
 # Copy in the connectivity check script
 cp /check_connectivity.sh "$cache_dir/airootfs/root/check_connectivity.sh"
@@ -131,9 +131,10 @@ cat <<- _EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
 	    	--creds user_credentials.json \
 	    	--silent && \
 	    export OMARCHY_USER=\$(ls /home/) && \
-	    cp -r /root/omarchy "/home/\$OMARCHY_USER/" && \
-	    chown \$OMARCHY_USER "/home/\$OMARCHY_USER/omarchy" \
-	    su - \$OMARCHY_USER -c "source /home/\$OMARCHY_USER/omarchy/install.sh"
+	    mkdir -p /home/\$OMARCHY_USER/.local/share/ && \
+	    cp -r /root/omarchy "/home/\$OMARCHY_USER/.local/share/" && \
+	    chown -R \$OMARCHY_USER: "/home/\$OMARCHY_USER//.local/" \
+	    su - \$OMARCHY_USER -c "source /home/\$OMARCHY_USER/.local/share/omarchy/install.sh"
 	fi
 _EOF_
 
