@@ -1,15 +1,16 @@
-# omarchy-iso
+# Omarchy ISO
 
-This will create an ISO that does two things:
+The Omarchy ISO is intended to provide a completely offline-capable installation of Omarchy. It therefore includes packages for everything that the Omarchy web installer requires. It also uses a custom front-end for archinstall that lives in the https://github.com/omacom-io/omarchy-installer repository, which is cloned at ISO build time. (It's kept seperate so it's easier to work on for folks who don't need to know everything about arch ISO building.)
 
-1. Auto-boot into Live Arch Linux (without prompt)
-2. Will auto-launch `omarchy-installer`
-
-# Build instructions
+## Creating the ISO
 
 Run `./bin/omarchy-iso-make` and the output goes into `./out`.
 
-# Signing
+## Testing the ISO
+
+Run `./bin/omarchy-iso-boot [out/name.iso]`.
+
+## Signing the ISO
 
 ```
 $ gpg --local-user [GPG Key ID] \
