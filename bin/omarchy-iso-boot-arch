@@ -56,7 +56,6 @@ check_requirements() {
         print_success "OVMF firmware is installed"
     fi
     
-    
     # Install missing packages
     if [ ${#packages_to_install[@]} -gt 0 ]; then
         print_info "Installing missing packages: ${packages_to_install[*]}"
@@ -175,25 +174,22 @@ build_qemu_command() {
         qemu_args+=("-drive" "if=pflash,format=raw,file=$OVMF_VARS_COPY")
     fi
     
-    # Storage devices - Smart boot order that handles both installation and post-install
-    # Credits to Ryan Hughes for this elegant solution:
-    # - Empty disk (bootindex=1) fails to boot -> falls back to ISO (bootindex=2)
-    # - After installation, disk is bootable -> boots from disk automatically
-    # This achieves David's goal without any complex monitoring!
+    # Storage devices - simplified for testing
     qemu_args+=("-drive" "file=$DISK1,format=qcow2,if=none,id=drive0")
-    qemu_args+=("-device" "virtio-blk-pci,drive=drive0,bootindex=1")
+    qemu_args+=("-device" "virtio-blk-pci,drive=drive0,bootindex=2")
     
     qemu_args+=("-drive" "file=$DISK2,format=qcow2,if=none,id=drive1")
     qemu_args+=("-device" "virtio-blk-pci,drive=drive1,bootindex=3")
     
-    # CD-ROM with ISO - set as second boot device (fallback)
+    # CD-ROM with ISO - set as first boot device for UEFI
     qemu_args+=("-drive" "file=$iso_file,media=cdrom,if=none,format=raw,id=cdrom0")
-    qemu_args+=("-device" "ide-cd,drive=cdrom0,bootindex=2")
+    qemu_args+=("-device" "ide-cd,drive=cdrom0,bootindex=1")
     
     # Display configuration
     if [ "$HEADLESS" = true ]; then
         qemu_args+=("-nographic")
         qemu_args+=("-vnc" ":1")
+        print_info "Headless mode. VNC server on :1 (port 5901)"
     else
         # Use virtio-vga for both UEFI and BIOS modes
         qemu_args+=("-device" "virtio-vga")
@@ -208,10 +204,8 @@ build_qemu_command() {
     qemu_args+=("-netdev" "user,id=net0")
     qemu_args+=("-device" "virtio-net-pci,netdev=net0")
     
-    
     echo "${qemu_args[@]}"
 }
-
 
 # Function to show usage
 show_usage() {
@@ -296,14 +290,6 @@ main() {
     # Setup storage
     print_info "Setting up storage..."
     setup_storage
-    
-    # Show display information
-    if [ "$HEADLESS" = true ]; then
-        print_info "Headless mode. VNC server on :1 (port 5901)"
-    fi
-    
-    print_info "Boot order: Disk (if bootable) -> ISO (fallback)"
-    print_info "After installation, system will automatically boot from disk"
     
     # Build QEMU command
     QEMU_CMD=$(build_qemu_command "$ISO_FILE")
