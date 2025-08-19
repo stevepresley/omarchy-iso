@@ -47,6 +47,13 @@ rm -rf "$cache_dir/airootfs/root/omarchy-installer"
 # Copy in the connectivity check script
 cp /check_connectivity.sh "$cache_dir/airootfs/root/check_connectivity.sh"
 
+# Configure sudoers for passwordless installation
+# This allows the installer to run without password prompts
+mkdir -p $cache_dir/airootfs/etc/sudoers.d/
+echo "# Omarchy ISO - Allow passwordless sudo during installation" >>"$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
+echo "root ALL=(ALL:ALL) NOPASSWD: ALL" >>"$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
+echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" >>"$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
+
 # We add in our auto-start applications
 # First we'll check for an active internet connection
 # Then we'll start the omarchy installer
