@@ -99,8 +99,6 @@ cat <<-_EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
 		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/guard.sh && \
 		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/gum.sh && \
 		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/tte.sh && \
-		echo '' > /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/tte.sh && \
-		echo '' > /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/gum.sh && \
 	    HOME=/home/\$OMARCHY_USER arch-chroot -u \$OMARCHY_USER /mnt/ /bin/bash -c "source /home/\$OMARCHY_USER/.local/share/omarchy/install.sh"
 	fi
 _EOF_
