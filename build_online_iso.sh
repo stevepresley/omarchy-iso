@@ -57,20 +57,30 @@ echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" >>"$cache_dir/airootfs/etc/sudoers.d/9
 # We add in our auto-start applications
 # First we'll check for an active internet connection
 # Then we'll start the omarchy installer
-cat <<-_EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
+cat <<-'_EOF_' | tee "$cache_dir/airootfs/root/.automated_script.sh"
 	#!/usr/bin/env bash
+  set -euo pipefail
 
-	if [[ \$(tty) == "/dev/tty1" ]]; then
-	    sh ./check_connectivity.sh && \
-	    sh ./installer && \
+	if [[ $(tty) == "/dev/tty1" ]]; then
+	    sh ./check_connectivity.sh
+	    sh ./installer
+
 	    archinstall \
 	    	--config user_configuration.json \
 	    	--creds user_credentials.json \
-	    	--silent && \
-	    export OMARCHY_USER=\`ls /mnt/home/\` && \
-      export OMARCHY_USER_NAME=$(<user_full_name.txt) && \
-      export OMARCHY_USER_EMAIL=$(<user_email_address.txt) && \
-	    HOME=/home/\$OMARCHY_USER arch-chroot -u \$OMARCHY_USER /mnt/ /bin/bash -c "wget -qO- https://omarchy.org/install-dev | bash"
+	    	--silent
+
+      OMARCHY_USER="$(ls -1 /mnt/home | head -n1)"
+
+      # Copy sudoers config to target system for passwordless sudo in chroot
+	    mkdir -p /mnt/etc/sudoers.d
+	    cp /etc/sudoers.d/99-omarchy-installer /mnt/etc/sudoers.d/
+
+	    HOME=/home/$OMARCHY_USER \
+      arch-chroot -u $OMARCHY_USER /mnt/ \
+        env OMARCHY_USER_NAME="$(<user_full_name.txt)" \
+            OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
+        /bin/bash -lc "wget -qO- https://omarchy.org/install-dev | bash"
 	fi
 _EOF_
 
