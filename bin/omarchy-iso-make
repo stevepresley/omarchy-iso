@@ -1,5 +1,6 @@
 #!/bin/bash
-set -euo pipefail
+
+set -e
 
 # Ensure we have the submodule checked out
 git submodule update --init --recursive --jobs=8
