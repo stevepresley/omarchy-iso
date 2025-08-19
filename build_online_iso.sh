@@ -44,8 +44,6 @@ mv "$cache_dir/airootfs/root/omarchy-installer/installer" "$cache_dir/airootfs/r
 mv "$cache_dir/airootfs/root/omarchy-installer/logo.txt" "$cache_dir/airootfs/root/logo.txt"
 rm -rf "$cache_dir/airootfs/root/omarchy-installer"
 
-git clone -b dev --single-branch https://github.com/basecamp/omarchy.git "$cache_dir/airootfs/root/omarchy"
-
 # Copy in the connectivity check script
 cp /check_connectivity.sh "$cache_dir/airootfs/root/check_connectivity.sh"
 
@@ -63,43 +61,9 @@ cat <<-_EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
 	    	--creds user_credentials.json \
 	    	--silent && \
 	    export OMARCHY_USER=\`ls /mnt/home/\` && \
-
-	    mkdir -p /mnt/home/\$OMARCHY_USER/.local/share/ && \
-	    cp -r /root/omarchy "/mnt/home/\$OMARCHY_USER/.local/share/" && \
-	    chown -R 1000:1000 "/mnt/home/\$OMARCHY_USER/.local/" && \
-	    chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install.sh && \
-	    chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/apps/mimetypes.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/apps/webapps.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/apps/xtras.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/detect-keyboard-layout.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/fix-fkeys.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/network.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/nvidia.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/power.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/timezones.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/config.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/identification.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/increase-sudo-tries.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/config/login.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/asdcontrol.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/bluetooth.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/fonts.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/hyprlandia.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/printer.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/theme.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/desktop/desktop.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/development.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/nvim.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/ruby.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/docker.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/firewall.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/development/terminal.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/migrations.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/aur.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/guard.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/gum.sh && \
-		chmod +x /mnt/home/\$OMARCHY_USER/.local/share/omarchy/install/preflight/tte.sh && \
-	    HOME=/home/\$OMARCHY_USER arch-chroot -u \$OMARCHY_USER /mnt/ /bin/bash -c "source /home/\$OMARCHY_USER/.local/share/omarchy/install.sh"
+      export OMARCHY_USER_NAME=$(<user_full_name.txt) && \
+      export OMARCHY_USER_EMAIL=$(<user_email_address.txt) && \
+	    HOME=/home/\$OMARCHY_USER arch-chroot -u \$OMARCHY_USER /mnt/ /bin/bash -c "wget -qO- https://omarchy.org/install-dev | bash"
 	fi
 _EOF_
 
