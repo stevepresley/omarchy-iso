@@ -75,7 +75,7 @@ prepare_offline_mirror() {
 
     # Revert the "online" AUR patch, as we'll replace it with the proper
     # offline patched mirror for the ISO later.
-    (cd $cache_dir && git apply -R /aur-mirror.patch)
+    (cd $cache_dir && git apply -R /builder/patches/offline/aur-mirror.patch)
   fi
 }
 
@@ -102,23 +102,16 @@ cp -r archiso/configs/releng/* $cache_dir/
 prepare_offline_mirror
 make_archiso_offline
 
-# We clone the installer, and move it to the root users home folder
-# since this is the default user in the official releng ISO profile.
-git clone https://github.com/omacom-io/omarchy-installer "$cache_dir/airootfs/root/omarchy-installer"
-mv "$cache_dir/airootfs/root/omarchy-installer/installer" "$cache_dir/airootfs/root/installer"
-mv "$cache_dir/airootfs/root/omarchy-installer/logo.txt" "$cache_dir/airootfs/root/logo.txt"
-rm -rf "$cache_dir/airootfs/root/omarchy-installer"
+# Insert the configurator in the root users home folder (default user in the official releng ISO profile).
+wget -qO "$cache_dir/airootfs/root/installer" https://raw.githubusercontent.com/omacom-io/omarchy-installer/HEAD/installer
 
+# Clone Omarchy itself
 git clone -b dev --single-branch https://github.com/basecamp/omarchy.git "$cache_dir/airootfs/root/omarchy"
 
-# Copy in the connectivity check script
-cp /check_connectivity.sh "$cache_dir/airootfs/root/check_connectivity.sh"
-
-# Configure sudoers for passwordless installation (Issue #7)
+# Configure sudoers for passwordless installation
 # This allows the installer to run without password prompts
-echo "# Omarchy ISO - Allow passwordless sudo during installation" >>"$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
-echo "root ALL=(ALL:ALL) NOPASSWD: ALL" >>"$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
-echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" >>"$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
+mkdir -p "$cache_dir/airootfs/etc/sudoers.d"
+cp /builder/configs/sudo-less-installation "$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
 
 # We add in our auto-start applications
 # First we'll check for an active internet connection
