@@ -31,5 +31,6 @@ docker run --rm \
 sudo chmod 777 -R "$BUILD_RELEASE_PATH"
 
 # Offer to boot the new build
+echo
 latest_iso=$(\ls -t "$BUILD_RELEASE_PATH"/*.iso | head -n1)
 gum confirm "Boot $latest_iso?" && omarchy-iso-boot "$latest_iso"
