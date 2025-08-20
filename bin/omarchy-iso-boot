@@ -4,7 +4,7 @@ set -e
 
 if [ $# -eq 0 ]; then
   echo "Usage: omarchy-iso-boot [release/omarchy.iso]"
-  exit
+  exit 1
 fi
 
 if ! pacman -Q qemu-full >/dev/null || ! pacman -Q edk2-ovmf >/dev/null; then
