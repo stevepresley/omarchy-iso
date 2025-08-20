@@ -5,7 +5,7 @@ set -e
 pacman-key --init
 pacman --noconfirm -Sy archlinux-keyring archiso sudo base-devel wget git
 
-# Packages needed for when we run the Omarchy installer
+# Packages needed for the Omarchy configurator (installer will fetch its own)
 arch_packages=(git wget gum openssl iw jq)
 
 # We build our iso here
@@ -19,8 +19,9 @@ cp -r /archiso/configs/releng/* .
 # Add our needed packages to packages.x86_64
 printf '%s\n' "${arch_packages[@]}" >>"packages.x86_64"
 
-# Insert the configurator in the root users home folder (default user in the official releng ISO profile).
-wget -qO "airootfs/root/installer" https://raw.githubusercontent.com/omacom-io/omarchy-installer/HEAD/installer
+# Retrieve the latest configurator for setting up user and selecting install disk.
+wget -qO "airootfs/root/configurator" \
+  https://raw.githubusercontent.com/omacom-io/omarchy-configurator/HEAD/configurator
 
 # Avoid using reflector for mirror identification as we are relying on the global CDN
 rm "airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
