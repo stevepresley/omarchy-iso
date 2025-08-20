@@ -8,7 +8,7 @@ chroot_bash() {
     OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
     USER="$OMARCHY_USER" \
     HOME="/home/$OMARCHY_USER" \
-    /bin/bash
+    /bin/bash "$@"
 }
 
 catch_errors() {
@@ -45,7 +45,6 @@ root ALL=(ALL:ALL) NOPASSWD: ALL
 $OMARCHY_USER ALL=(ALL:ALL) NOPASSWD: ALL
 EOF
 
-  chmod 440 /mnt/etc/sudoers.d/99-omarchy-installer
   chmod 440 /mnt/etc/sudoers.d/99-omarchy-installer
 
   # Install from the Omarchy web installer
