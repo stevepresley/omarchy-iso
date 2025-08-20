@@ -12,9 +12,9 @@ mkdir -p "$BUILD_ROOT/release"
 
 # Determine which build script to use
 if [[ $1 == "--offline" ]]; then
-  BUILD_SCRIPT="build_iso.sh"
+  BUILD_SCRIPT="builder/offline.sh"
 else
-  BUILD_SCRIPT="build_online_iso.sh"
+  BUILD_SCRIPT="builder/online.sh"
 fi
 
 # Run the builder
