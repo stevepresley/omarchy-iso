@@ -19,7 +19,7 @@ cp -r /archiso/configs/releng/* .
 # Insert the configurator in the root users home folder (default user in the official releng ISO profile).
 wget -qO "airootfs/root/installer" https://raw.githubusercontent.com/omacom-io/omarchy-installer/HEAD/installer
 
-# Avoid using reflector for mirror identification
+# Avoid using reflector for mirror identification as we are relying on the global CDN
 rm "airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
 rm -rf "airootfs/etc/systemd/system/reflector.service.d"
 rm -rf "airootfs/etc/xdg/reflector"
