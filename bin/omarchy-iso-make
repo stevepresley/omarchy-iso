@@ -7,8 +7,9 @@ set -e
 git submodule update --init --recursive --jobs=8
 
 # Prepare build repo
-BUILD_ROOT="$(realpath "${BASH_SOURCE[0]%/*}/..")"
-mkdir -p "$BUILD_ROOT/release"
+BUILD_ROOT=$(realpath "${BASH_SOURCE[0]%/*}/..")
+BUILD_RELEASE_PATH="$BUILD_ROOT/release"
+mkdir -p "$BUILD_RELEASE_PATH"
 
 # Determine which build script to use
 if [[ $1 == "--offline" ]]; then
@@ -20,11 +21,15 @@ fi
 # Run the builder
 docker run --rm \
   --privileged \
-  -v "$BUILD_ROOT/release/:/out/" \
+  -v "$BUILD_RELEASE_PATH/:/out/" \
   -v "$BUILD_ROOT/$BUILD_SCRIPT:/$BUILD_SCRIPT:ro" \
   -v "$BUILD_ROOT/archiso:/archiso:ro" \
   -v "$BUILD_ROOT/builder:/builder:ro" \
   archlinux/archlinux:latest /$BUILD_SCRIPT
 
 # Make iso accessible to all
-sudo chmod 777 -R "$BUILD_ROOT/release"
+sudo chmod 777 -R "$BUILD_RELEASE_PATH"
+
+# Offer to boot the new build
+latest_iso=$(\ls -t "$BUILD_RELEASE_PATH/*.iso" | head -n1)
+gum confirm "Boot $latest_iso?" && omarchy-iso-boot "$latest_iso"
