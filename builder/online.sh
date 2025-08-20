@@ -31,9 +31,9 @@ rm -rf "airootfs/etc/xdg/reflector"
 cp /builder/cmds/autostart.sh airootfs/root/.automated_script.sh
 
 # Patch the default archiso install files
-git apply /builder/patches/profiledef.patch
-git apply /builder/patches/grub-autoboot.patch
-git apply /builder/patches/efi-autoboot.patch
+for patch in /builder/patches/*.patch; do
+  git apply "$patch"
+done
 
 # Remove the default motd
 rm airootfs/etc/motd
