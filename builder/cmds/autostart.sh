@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+chroot_bash() {
+  HOME=/home/$OMARCHY_USER \
+    arch-chroot -u $OMARCHY_USER /mnt/ \
+    env OMARCHY_USER_NAME="$(<user_full_name.txt)" \
+    OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
+    USER="$OMARCHY_USER" \
+    HOME="/home/$OMARCHY_USER" \
+    /bin/bash
+}
+
 catch_errors() {
   echo -e "\n\e[31mOmarchy installation failed!\e[0m"
   echo "The failing command was: \`$BASH_COMMAND\` (exit code: $?)"
@@ -8,11 +18,7 @@ catch_errors() {
 
   if [[ -n $OMARCHY_USER ]]; then
     echo "You can retry by running: bash ~/.local/share/omarchy/install.sh"
-    HOME=/home/$OMARCHY_USER \
-      arch-chroot -u $OMARCHY_USER /mnt/ \
-      env OMARCHY_USER_NAME="$(<user_full_name.txt)" \
-      OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
-      /bin/bash
+    chroot_bash
   fi
 }
 
@@ -33,9 +39,9 @@ if [[ $(tty) == "/dev/tty1" ]]; then
   mkdir -p /mnt/etc/sudoers.d
   echo "root ALL=(ALL:ALL) NOPASSWD: ALL\n%wheel ALL=(ALL:ALL) NOPASSWD: ALL\n$OMARCHY_USER ALL=(ALL:ALL) NOPASSWD: ALL" >/mnt/etc/sudoers.d/99-omarchy-installer
 
-  HOME=/home/$OMARCHY_USER \
-    arch-chroot -u $OMARCHY_USER /mnt/ \
-    env OMARCHY_USER_NAME="$(<user_full_name.txt)" \
-    OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
-    /bin/bash -lc "wget -qO- https://omarchy.org/install-dev | bash"
+  chmod 440 /mnt/etc/sudoers.d/99-omarchy-installer
+  chmod 440 /mnt/etc/sudoers.d/99-omarchy-installer
+
+  # Install from the Omarchy web installer
+  chroot_bash -lc "wget -qO- https://omarchy.org/install-dev | bash"
 fi
