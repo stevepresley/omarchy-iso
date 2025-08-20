@@ -14,7 +14,7 @@ mkdir -p $cache_dir
 cd $cache_dir
 
 # We base our ISO on the official arch ISO (releng) config
-cp -r /archiso/configs/releng/* $cache_dir/
+cp -r /archiso/configs/releng/* .
 
 # Insert the configurator in the root users home folder (default user in the official releng ISO profile).
 wget -qO "airootfs/root/installer" https://raw.githubusercontent.com/omacom-io/omarchy-installer/HEAD/installer
