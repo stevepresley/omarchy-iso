@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ $(tty) == "/dev/tty1" ]]; then
-  NETWORK_NEEDED=1 sh ./installer
+  NETWORK_NEEDED=1 ./installer
 
   archinstall \
     --config user_configuration.json \
