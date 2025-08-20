@@ -27,7 +27,7 @@ cp /builder/configs/sudo-less-installation "$cache_dir/airootfs/etc/sudoers.d/99
 # We add in our auto-start applications
 # First we'll check for an active internet connection
 # Then we'll start the omarchy installer
-cp /builder/cmds/autostart-installer.sh "$cache_dir/airootfs/root/.automated_script.sh"
+cp /builder/cmds/autostart.sh "$cache_dir/airootfs/root/.automated_script.sh"
 
 # We patch permissions, grub and efi loaders to our liking:
 (cd $cache_dir/ && git apply /builder/patches/permissions-online.patch)
