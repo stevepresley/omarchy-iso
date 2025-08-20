@@ -40,12 +40,6 @@ rm "$cache_dir/airootfs/etc/motd"
 # Add our needed packages to packages.x86_64
 printf '%s\n' "${arch_packages[@]}" >>"$cache_dir/packages.x86_64"
 
-# Because this weird glitch with archiso, we also need to sync down
-# all the packages we need to build the ISO, but we'll do that in the
-# "host" mirror location, as we don't want them inside the ISO taking up space.
-# We'll also remove tzupdate as it won't be found in upstream mirrors.
-iso_packages=($(cat "$cache_dir/packages.x86_64"))
-
 mkdir -p /tmp/cleandb
 
 # Finally, we assemble the entire ISO
