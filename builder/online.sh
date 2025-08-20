@@ -10,13 +10,19 @@ arch_packages=(git wget gum openssl iw)
 
 # We build our iso here
 cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso_$(date +%Y-%m-%d))
-mkdir -p $cache_dir/
+mkdir -p $cache_dir
+cd $cache_dir
 
 # We base our ISO on the official arch ISO (releng) config
-cp -r archiso/configs/releng/* $cache_dir/
+cp -r /archiso/configs/releng/* $cache_dir/
 
 # Insert the configurator in the root users home folder (default user in the official releng ISO profile).
-wget -qO "$cache_dir/airootfs/root/installer" https://raw.githubusercontent.com/omacom-io/omarchy-installer/HEAD/installer
+wget -qO "airootfs/root/installer" https://raw.githubusercontent.com/omacom-io/omarchy-installer/HEAD/installer
+
+# Avoid using reflector for mirror identification
+rm "airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
+rm -rf "airootfs/etc/systemd/system/reflector.service.d"
+rm -rf "airootfs/etc/xdg/reflector"
 
 # Configure sudoers for passwordless installation
 # This allows the installer to run without password prompts
@@ -24,18 +30,18 @@ wget -qO "$cache_dir/airootfs/root/installer" https://raw.githubusercontent.com/
 # cp /builder/configs/sudo-less-installation "$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
 
 # Ensure the Omarchy installer launches automatically on boot
-cp /builder/cmds/autostart.sh "$cache_dir/airootfs/root/.automated_script.sh"
+cp /builder/cmds/autostart.sh airootfs/root/.automated_script.sh
 
-# We patch permissions, grub and efi loaders to our liking
-(cd $cache_dir/ && git apply /builder/patches/profiledef.patch)
-(cd $cache_dir/ && git apply /builder/patches/grub-autoboot.patch)
-(cd $cache_dir/ && git apply /builder/patches/efi-autoboot.patch)
+# Patch the default archiso install files
+git apply /builder/patches/profiledef.patch
+git apply /builder/patches/grub-autoboot.patch
+git apply /builder/patches/efi-autoboot.patch
 
 # Remove the default motd
-rm "$cache_dir/airootfs/etc/motd"
+rm airootfs/etc/motd
 
 # Add our needed packages to packages.x86_64
-printf '%s\n' "${arch_packages[@]}" >>"$cache_dir/packages.x86_64"
+printf '%s\n' "${arch_packages[@]}" >>"packages.x86_64"
 
 mkdir -p /tmp/cleandb
 
