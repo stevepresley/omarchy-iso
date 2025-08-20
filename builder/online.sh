@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 # Note that these are packages installed to the Arch container used to build the ISO.
@@ -21,16 +20,14 @@ wget -qO "$cache_dir/airootfs/root/installer" https://raw.githubusercontent.com/
 
 # Configure sudoers for passwordless installation
 # This allows the installer to run without password prompts
-mkdir -p "$cache_dir/airootfs/etc/sudoers.d"
-cp /builder/configs/sudo-less-installation "$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
+# mkdir -p "$cache_dir/airootfs/etc/sudoers.d"
+# cp /builder/configs/sudo-less-installation "$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
 
-# We add in our auto-start applications
-# First we'll check for an active internet connection
-# Then we'll start the omarchy installer
+# Ensure the Omarchy installer launches automatically on boot
 cp /builder/cmds/autostart.sh "$cache_dir/airootfs/root/.automated_script.sh"
 
-# We patch permissions, grub and efi loaders to our liking:
-(cd $cache_dir/ && git apply /builder/patches/permissions-online.patch)
+# We patch permissions, grub and efi loaders to our liking
+(cd $cache_dir/ && git apply /builder/patches/profiledef.patch)
 (cd $cache_dir/ && git apply /builder/patches/grub-autoboot.patch)
 (cd $cache_dir/ && git apply /builder/patches/efi-autoboot.patch)
 
