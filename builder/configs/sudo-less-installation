@@ -1,3 +1,0 @@
-# Omarchy ISO - Allow passwordless sudo during installation
-root ALL=(ALL:ALL) NOPASSWD: ALL
-%wheel ALL=(ALL:ALL) NOPASSWD: ALL

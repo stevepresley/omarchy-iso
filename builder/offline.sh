@@ -108,11 +108,6 @@ wget -qO "$cache_dir/airootfs/root/installer" https://raw.githubusercontent.com/
 # Clone Omarchy itself
 git clone -b dev --single-branch https://github.com/basecamp/omarchy.git "$cache_dir/airootfs/root/omarchy"
 
-# Configure sudoers for passwordless installation
-# This allows the installer to run without password prompts
-mkdir -p "$cache_dir/airootfs/etc/sudoers.d"
-cp /builder/configs/sudo-less-installation "$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
-
 # We add in our auto-start applications
 # First we'll check for an active internet connection
 # Then we'll start the omarchy installer
