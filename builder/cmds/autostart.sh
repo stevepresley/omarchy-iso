@@ -39,7 +39,11 @@ if [[ $(tty) == "/dev/tty1" ]]; then
 
   # No need to ask for sudo during the installation (omarchy itself responsible for removing after install)
   mkdir -p /mnt/etc/sudoers.d
-  echo "root ALL=(ALL:ALL) NOPASSWD: ALL\n%wheel ALL=(ALL:ALL) NOPASSWD: ALL\n$OMARCHY_USER ALL=(ALL:ALL) NOPASSWD: ALL" >/mnt/etc/sudoers.d/99-omarchy-installer
+  cat >/mnt/etc/sudoers.d/99-omarchy-installer <<EOF
+root ALL=(ALL:ALL) NOPASSWD: ALL
+%wheel ALL=(ALL:ALL) NOPASSWD: ALL
+$OMARCHY_USER ALL=(ALL:ALL) NOPASSWD: ALL
+EOF
 
   chmod 440 /mnt/etc/sudoers.d/99-omarchy-installer
   chmod 440 /mnt/etc/sudoers.d/99-omarchy-installer
