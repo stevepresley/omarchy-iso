@@ -24,11 +24,6 @@ rm "airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
 rm -rf "airootfs/etc/systemd/system/reflector.service.d"
 rm -rf "airootfs/etc/xdg/reflector"
 
-# Configure sudoers for passwordless installation
-# This allows the installer to run without password prompts
-# mkdir -p "$cache_dir/airootfs/etc/sudoers.d"
-# cp /builder/configs/sudo-less-installation "$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
-
 # Ensure the Omarchy installer launches automatically on boot
 cp /builder/cmds/autostart.sh airootfs/root/.automated_script.sh
 
