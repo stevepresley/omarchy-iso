@@ -16,6 +16,7 @@ DISK="/tmp/omarchy-iso-boot.qcow2"
 
 cp /usr/share/edk2/x64/OVMF_VARS.4m.fd /tmp/OVMF_VARS.4m.fd
 
+# Boot from ISO before we've installed, then boot from drive after
 qemu-system-x86_64 \
   -cpu host -enable-kvm -machine q35,accel=kvm \
   -smp "$(nproc)" \
