@@ -6,7 +6,7 @@ pacman-key --init
 pacman --noconfirm -Sy archlinux-keyring archiso sudo base-devel wget git
 
 # Packages needed for when we run the Omarchy installer
-arch_packages=(git wget gum openssl iw)
+arch_packages=(git wget gum openssl iw jq)
 
 # We build our iso here
 cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso_$(date +%Y-%m-%d))
