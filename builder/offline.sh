@@ -183,9 +183,9 @@ cat <<-_EOF_ | tee $cache_dir/airootfs/root/.automated_script.sh
 _EOF_
 
 # We patch permissions, grub and efi loaders to our liking:
-(cd $cache_dir/ && git apply /permissions.patch)
-(cd $cache_dir/ && git apply /grub-autoboot.patch)
-(cd $cache_dir/ && git apply /efi-autoboot.patch)
+(cd $cache_dir/ && git apply /builder/patches/offline/permissions.patch)
+(cd $cache_dir/ && git apply /builder/patches/grub-autoboot.patch)
+(cd $cache_dir/ && git apply /builder/patches/efi-autoboot.patch)
 # We could also use:
 # patch -p1 < aur-mirror.patch
 # patch -p1 < permissions.patch
