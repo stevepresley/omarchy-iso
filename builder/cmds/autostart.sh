@@ -44,7 +44,6 @@ root ALL=(ALL:ALL) NOPASSWD: ALL
 %wheel ALL=(ALL:ALL) NOPASSWD: ALL
 $OMARCHY_USER ALL=(ALL:ALL) NOPASSWD: ALL
 EOF
-
   chmod 440 /mnt/etc/sudoers.d/99-omarchy-installer
 
   # Install from the Omarchy web installer
