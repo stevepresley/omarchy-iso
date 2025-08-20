@@ -16,6 +16,9 @@ cd $cache_dir
 # We base our ISO on the official arch ISO (releng) config
 cp -r /archiso/configs/releng/* .
 
+# Add our needed packages to packages.x86_64
+printf '%s\n' "${arch_packages[@]}" >>"packages.x86_64"
+
 # Insert the configurator in the root users home folder (default user in the official releng ISO profile).
 wget -qO "airootfs/root/installer" https://raw.githubusercontent.com/omacom-io/omarchy-installer/HEAD/installer
 
@@ -34,11 +37,6 @@ git apply /builder/patches/efi-autoboot.patch
 
 # Remove the default motd
 rm airootfs/etc/motd
-
-# Add our needed packages to packages.x86_64
-printf '%s\n' "${arch_packages[@]}" >>"packages.x86_64"
-
-mkdir -p /tmp/cleandb
 
 # Finally, we assemble the entire ISO
 mkarchiso -v -w "$cache_dir/work/" -o "/out/" "$cache_dir/"
