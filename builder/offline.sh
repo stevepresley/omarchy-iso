@@ -116,9 +116,9 @@ cp /check_connectivity.sh "$cache_dir/airootfs/root/check_connectivity.sh"
 
 # Configure sudoers for passwordless installation (Issue #7)
 # This allows the installer to run without password prompts
-echo "# Omarchy ISO - Allow passwordless sudo during installation" >> "$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
-echo "root ALL=(ALL:ALL) NOPASSWD: ALL" >> "$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
-echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" >> "$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
+echo "# Omarchy ISO - Allow passwordless sudo during installation" >>"$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
+echo "root ALL=(ALL:ALL) NOPASSWD: ALL" >>"$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
+echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" >>"$cache_dir/airootfs/etc/sudoers.d/99-omarchy-installer"
 
 # We add in our auto-start applications
 # First we'll check for an active internet connection
@@ -234,4 +234,3 @@ repo-add --new "/var/cache/omarchy/mirror/offline/offline.db.tar.gz" "/var/cache
 
 # Finally, we assemble the entire ISO
 mkarchiso -v -w "$cache_dir/work/" -o "/out/" "$cache_dir/"
-
