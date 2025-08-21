@@ -13,3 +13,11 @@ Run `./bin/omarchy-iso-boot [release/omarchy.iso]`.
 ## Signing the ISO
 
 Run `./bin/omarchy-iso-sign [gpg-user] [release/omarchy.iso]`.
+
+## Uploading the ISO
+
+Run `./bin/omarchy-iso-upload [release/omarchy.iso]`. This requires you've configured rclone (use `rclone config`).
+
+## Full release of the ISO
+
+Run `./bin/omarchy-iso-make` to create, test, sign, and upload the ISO in one flow.
