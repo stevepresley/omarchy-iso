@@ -19,6 +19,8 @@ catch_errors() {
   if [[ -n $OMARCHY_USER ]]; then
     echo "You can retry by running: bash ~/.local/share/omarchy/install.sh"
     chroot_bash
+  else
+    echo "You can retry by running: ./configurator"
   fi
 }
 
@@ -26,7 +28,7 @@ trap catch_errors ERR
 
 if [[ $(tty) == "/dev/tty1" ]]; then
   # Configurator for user information, disk selection, and wifi configuration
-  NETWORK_NEEDED=1 ./configurator
+  ./configurator
 
   # Get username from installer config for reliable error recovery
   OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
