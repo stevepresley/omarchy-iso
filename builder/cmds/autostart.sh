@@ -16,11 +16,11 @@ catch_errors() {
   echo "The failing command was: \`$BASH_COMMAND\` (exit code: $?)"
   echo "Get help from the community: https://discord.gg/tXFUdasqhY"
 
-  if [[ -n $OMARCHY_USER ]]; then
+  if [[ -z ${OMARCHY_USER-} ]]; then
+    echo "You can retry by running: ./configurator"
+  else
     echo "You can retry by running: bash ~/.local/share/omarchy/install.sh"
     chroot_bash
-  else
-    echo "You can retry by running: ./configurator"
   fi
 }
 
