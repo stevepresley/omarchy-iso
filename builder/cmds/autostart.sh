@@ -26,7 +26,6 @@ trap catch_errors ERR
 
 if [[ $(tty) == "/dev/tty1" ]]; then
   # Configurator for user information, disk selection, and wifi configuration
-  wget -qO configurator https://raw.githubusercontent.com/omacom-io/omarchy-configurator/HEAD/configurator
   NETWORK_NEEDED=1 ./configurator
 
   # Get username from installer config for reliable error recovery

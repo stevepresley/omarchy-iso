@@ -19,8 +19,9 @@ cp -r /archiso/configs/releng/* .
 # Add our needed packages to packages.x86_64
 printf '%s\n' "${arch_packages[@]}" >>"packages.x86_64"
 
-# Setup stub file for the configurator so we can give it the right permissions before downloading
-cp /builder/cmds/configurator airootfs/root/configurator
+# Retrieve the latest configurator for setting up user and selecting install disk.
+wget -qO "airootfs/root/configurator" \
+  https://raw.githubusercontent.com/omacom-io/omarchy-configurator/HEAD/configurator
 
 # Avoid using reflector for mirror identification as we are relying on the global CDN
 rm "airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
