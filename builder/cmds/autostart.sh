@@ -14,7 +14,23 @@ chroot_bash() {
 catch_errors() {
   echo -e "\n\e[31mOmarchy installation failed!\e[0m"
   echo "The failing command was: \`$BASH_COMMAND\` (exit code: $?)"
-  echo "Get help from the community: https://discord.gg/tXFUdasqhY"
+  echo
+  echo "Get help from the community (or scan QR code below): https://discord.gg/tXFUdasqhY"
+  echo "                                 "
+  echo "    █▀▀▀▀▀█ ▄ ▄ ▀▄▄▄█ █▀▀▀▀▀█    "
+  echo "    █ ███ █ ▄▄▄▄▀▄▀▄▀ █ ███ █    "
+  echo "    █ ▀▀▀ █ ▄█  ▄█▄▄▀ █ ▀▀▀ █    "
+  echo "    ▀▀▀▀▀▀▀ ▀▄█ █ █ █ ▀▀▀▀▀▀▀    "
+  echo "    ▀▀█▀▀▄▀▀▀▀▄█▀▀█  ▀ █ ▀ █     "
+  echo "    █▄█ ▄▄▀▄▄ ▀ ▄ ▀█▄▄▄▄ ▀ ▀█    "
+  echo "    ▄ ▄▀█ ▀▄▀▀▀▄ ▄█▀▄█▀▄▀▄▀█▀    "
+  echo "    █ ▄▄█▄▀▄█ ▄▄▄  ▀ ▄▀██▀ ▀█    "
+  echo "    ▀ ▀   ▀ █ ▀▄  ▀▀█▀▀▀█▄▀      "
+  echo "    █▀▀▀▀▀█ ▀█  ▄▀▀ █ ▀ █▄▀██    "
+  echo "    █ ███ █ █▀▄▄▀ █▀███▀█▄██▄    "
+  echo "    █ ▀▀▀ █ ██  ▀ █▄█ ▄▄▄█▀ █    "
+  echo "    ▀▀▀▀▀▀▀ ▀ ▀ ▀▀▀  ▀ ▀▀▀▀▀▀    "
+  echo "                                 "
 
   if [[ -z ${OMARCHY_USER-} ]]; then
     echo "You can retry by running: ./configurator"
