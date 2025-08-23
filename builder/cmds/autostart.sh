@@ -16,7 +16,7 @@ chroot_bash() {
 }
 
 catch_errors() {
-  echo -e "\n\e[31mOmarchy installation failed!\e[0m"
+  echo -e "\n\e[31mOmarchy ISO installation failed!\e[0m"
   echo
   echo "This command halted with exit code $?:"
   echo "$BASH_COMMAND"
