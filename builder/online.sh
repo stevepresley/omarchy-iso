@@ -3,10 +3,10 @@ set -e
 
 # Note that these are packages installed to the Arch container used to build the ISO.
 pacman-key --init
-pacman --noconfirm -Sy archlinux-keyring archiso sudo base-devel wget git
+pacman --noconfirm -Sy archlinux-keyring archiso sudo base-devel git
 
 # Packages needed for the Omarchy configurator (installer will fetch its own)
-arch_packages=(git wget gum openssl iw jq)
+arch_packages=(git gum openssl iw jq)
 
 # We build our iso here
 cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso_$(date +%Y-%m-%d))
@@ -20,8 +20,8 @@ cp -r /archiso/configs/releng/* .
 printf '%s\n' "${arch_packages[@]}" >>"packages.x86_64"
 
 # Retrieve the latest configurator for setting up user and selecting install disk.
-wget -qO "airootfs/root/configurator" \
-  https://raw.githubusercontent.com/$OMARCHY_CONFIGURATOR_REPO/$OMARCHY_CONFIGURATOR_REF/configurator
+curl -fsSL -o "airootfs/root/configurator" \
+  "https://raw.githubusercontent.com/$omarchy_configurator_repo/$omarchy_configurator_ref/configurator"
 
 echo "$OMARCHY_INSTALLER_REPO" >airootfs/root/omarchy_installer_repo.txt
 echo "$OMARCHY_INSTALLER_REF" >airootfs/root/omarchy_installer_ref.txt

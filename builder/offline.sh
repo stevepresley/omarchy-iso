@@ -6,7 +6,7 @@ set -e
 # used to build the ISO.
 pacman-key --init
 pacman --noconfirm -Sy archlinux-keyring
-pacman --noconfirm -Sy archiso git python-pip sudo base-devel jq wget
+pacman --noconfirm -Sy archiso git python-pip sudo base-devel jq
 
 cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso_$(date +%Y-%m-%d))
 offline_mirror_dir="$cache_dir/airootfs/var/cache/omarchy/mirror/offline"
@@ -26,10 +26,8 @@ python_packages=(
 )
 arch_packages=(
   git
-  impala
   gum
   openssl
-  wget
   tzupdate # This is technically an AUR package
 )
 
@@ -103,7 +101,8 @@ prepare_offline_mirror
 make_archiso_offline
 
 # Insert the configurator in the root users home folder (default user in the official releng ISO profile).
-wget -qO "$cache_dir/airootfs/root/installer" https://raw.githubusercontent.com/omacom-io/omarchy-installer/HEAD/installer
+curl -fsSL -o "airootfs/root/configurator" \
+  "https://raw.githubusercontent.com/$omarchy_configurator_repo/$omarchy_configurator_ref/configurator"
 
 # Clone Omarchy itself
 git clone -b dev --single-branch https://github.com/basecamp/omarchy.git "$cache_dir/airootfs/root/omarchy"
