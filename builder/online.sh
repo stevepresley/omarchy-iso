@@ -21,7 +21,7 @@ printf '%s\n' "${arch_packages[@]}" >>"packages.x86_64"
 
 # Retrieve the latest configurator for setting up user and selecting install disk.
 curl -fsSL -o "airootfs/root/configurator" \
-  "https://raw.githubusercontent.com/$omarchy_configurator_repo/$omarchy_configurator_ref/configurator"
+  "https://raw.githubusercontent.com/$OMARCHY_CONFIGURATOR_REPO/$OMARCHY_CONFIGURATOR_REF/configurator"
 
 echo "$OMARCHY_INSTALLER_REPO" >airootfs/root/omarchy_installer_repo.txt
 echo "$OMARCHY_INSTALLER_REF" >airootfs/root/omarchy_installer_ref.txt

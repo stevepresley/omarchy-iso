@@ -102,7 +102,7 @@ make_archiso_offline
 
 # Insert the configurator in the root users home folder (default user in the official releng ISO profile).
 curl -fsSL -o "airootfs/root/configurator" \
-  "https://raw.githubusercontent.com/$omarchy_configurator_repo/$omarchy_configurator_ref/configurator"
+  "https://raw.githubusercontent.com/$OMARCHY_CONFIGURATOR_REPO/$OMARCHY_CONFIGURATOR_REF/configurator"
 
 # Clone Omarchy itself
 git clone -b dev --single-branch https://github.com/basecamp/omarchy.git "$cache_dir/airootfs/root/omarchy"
