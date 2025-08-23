@@ -4,7 +4,8 @@ set -euo pipefail
 chroot_bash() {
   HOME=/home/$OMARCHY_USER \
     arch-chroot -u $OMARCHY_USER /mnt/ \
-    env OMARCHY_USER_NAME="$(<user_full_name.txt)" \
+    env OMARCHY_CHROOT_INSTALL=1 \
+    OMARCHY_USER_NAME="$(<user_full_name.txt)" \
     OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
     USER="$OMARCHY_USER" \
     HOME="/home/$OMARCHY_USER" \
