@@ -18,7 +18,7 @@ catch_errors() {
   echo -e "\n\e[31mOmarchy installation failed!\e[0m"
   echo "The failing command was: \`$BASH_COMMAND\` (exit code: $?)"
   echo
-  echo "Get help from the community (or scan QR code below): https://discord.gg/tXFUdasqhY"
+  echo "Get help from the community via QR code or at https://discord.gg/tXFUdasqhY"
   echo "                                 "
   echo "    █▀▀▀▀▀█ ▄ ▄ ▀▄▄▄█ █▀▀▀▀▀█    "
   echo "    █ ███ █ ▄▄▄▄▀▄▀▄▀ █ ███ █    "
