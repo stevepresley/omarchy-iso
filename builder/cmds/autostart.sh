@@ -41,7 +41,7 @@ catch_errors() {
   if [[ -z ${OMARCHY_USER-} ]]; then
     echo "You must reboot and start over to try again"
   else
-    echo "You can retry by running: bash ~/.local/share/omarchy/install.sh || bash"
+    echo "You can retry by running: bash .local/share/omarchy/install.sh || bash"
     chroot_bash
   fi
 }
