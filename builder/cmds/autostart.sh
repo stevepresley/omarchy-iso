@@ -71,5 +71,5 @@ EOF
   chmod 440 /mnt/etc/sudoers.d/99-omarchy-installer
 
   # Run Omarchy web installer
-  chroot_bash -lc "curl -fsSL https://omarchy.org/install-dev | bash"
+  chroot_bash -lc "curl -fsSL https://omarchy.org/install-dev | bash || true"
 fi
