@@ -39,7 +39,7 @@ catch_errors() {
   echo "                                 "
 
   if [[ -z ${OMARCHY_USER-} ]]; then
-    echo "You can retry by running: ./configurator"
+    echo "You must reboot and start over to try again"
   else
     echo "You can retry by running: bash ~/.local/share/omarchy/install.sh"
     chroot_bash
