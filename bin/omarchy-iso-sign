@@ -10,6 +10,5 @@ if ! pacman -Q gnupg >/dev/null; then
   echo "you'll need to generate a new key with: gpg --full-generate-key"
 fi
 
-gnupg-user-key=$(gpg --list-secret-keys --keyid-format=long | awk '/^[[:space:]]/{print $1; exit}')
-
-gpg --local-user $gnupg-user-key --output $2.sig --detach-sig $2
+gnupg_user_key=$(gpg --list-secret-keys --keyid-format=long | awk '/^[[:space:]]/{print $1; exit}')
+gpg --local-user "$gnupg_user_key" --output $2.sig --detach-sig $2
