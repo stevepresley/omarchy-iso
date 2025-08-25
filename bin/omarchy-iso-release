@@ -4,7 +4,7 @@ BUILD_ROOT=$(realpath "${BASH_SOURCE[0]%/*}/..")
 BUILD_RELEASE_PATH="$BUILD_ROOT/release"
 
 # Sign and upload the latest ISO
-latest_iso=$(\ls -t "$BUILD_RELEASE_PATH"/*.iso | head -n1)
-cp "$BUILD_RELEASE_PATH/$latest_iso" "$BUILD_RELEASE_PATH/omarchy-online-dev.iso"
+latest_iso=$(\ls -t "$BUILD_RELEASE_PATH"/*x86_64.iso | head -n1)
+cp "$latest_iso" "$BUILD_RELEASE_PATH/omarchy-online-dev.iso"
 omarchy-iso-sign omarchy-online-dev.iso
 omarchy-iso-upload omarchy-online-dev.iso
