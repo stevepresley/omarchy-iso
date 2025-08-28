@@ -36,7 +36,13 @@ docker run --rm \
 # Make iso accessible to all
 sudo chmod 777 -R "$BUILD_RELEASE_PATH"
 
-# Offer to boot the new build
-echo
+# Move as install ref
 latest_iso=$(\ls -t "$BUILD_RELEASE_PATH"/*.iso | head -n1)
-gum confirm "Boot $latest_iso?" && omarchy-iso-boot "$latest_iso"
+iso_ref="${latest_iso%.*}-$OMARCHY_INSTALLER_REF.iso"
+mv "$latest_iso" "$iso_ref"
+
+# Offer to boot the new build
+if [[ $1 != "--no-boot-offer" ]]; then
+  echo
+  gum confirm "Boot $iso_ref?" && omarchy-iso-boot "$iso_ref"
+fi
