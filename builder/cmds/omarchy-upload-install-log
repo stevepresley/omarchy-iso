@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Upload Omarchy install log to 0x0.st
+
+LOG_FILE="/var/log/omarchy-install.log"
+
+if [ ! -f "$LOG_FILE" ]; then
+  echo "Error: Install log not found at $LOG_FILE"
+  exit 1
+fi
+
+echo "Uploading Omarchy install log to 0x0.st..."
+echo "The log will expire in 24 hours."
+echo ""
+
+# Upload the file and capture the URL
+URL=$(curl -sF "file=@$LOG_FILE" -Fexpires=24 https://0x0.st)
+
+if [ $? -eq 0 ] && [ -n "$URL" ]; then
+  echo "✓ Log uploaded successfully!"
+  echo "Share this URL with support:"
+  echo ""
+  echo "  $URL"
+  echo ""
+  echo "This link will expire in 24 hours."
+else
+  echo "Error: Failed to upload log file"
+  exit 1
+fi
+

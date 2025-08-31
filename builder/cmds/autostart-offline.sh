@@ -96,6 +96,11 @@ EOF
   mkdir -p /mnt/home/$OMARCHY_USER/.local/share/applications/icons
   cp -r /root/.local/share/applications/icons/* /mnt/home/$OMARCHY_USER/.local/share/applications/icons/
 
+  # Copy the log upload utility to the installed system
+  mkdir -p /mnt/usr/local/bin
+  cp /usr/local/bin/omarchy-upload-install-log /mnt/usr/local/bin/
+  chmod +x /mnt/usr/local/bin/omarchy-upload-install-log
+
   chown -R 1000:1000 /mnt/home/$OMARCHY_USER/.local/
   # Ensure all scripts in bin directories are executable
   find /mnt/home/$OMARCHY_USER/.local/share/omarchy -type f -path "*/bin/*" -exec chmod +x {} \;

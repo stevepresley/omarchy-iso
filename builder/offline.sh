@@ -130,6 +130,11 @@ cp /builder/icons/*.png "$cache_dir/airootfs/root/.local/share/applications/icon
 # Copy the autostart script (we'll need to create an offline version)
 cp /builder/cmds/autostart-offline.sh $cache_dir/airootfs/root/.automated_script.sh
 
+# Copy the log upload utility to /usr/local/bin
+mkdir -p "$cache_dir/airootfs/usr/local/bin"
+cp /builder/cmds/omarchy-upload-install-log "$cache_dir/airootfs/usr/local/bin/"
+chmod +x "$cache_dir/airootfs/usr/local/bin/omarchy-upload-install-log"
+
 # Apply offline-specific patches
 (cd $cache_dir/ && git apply /builder/patches/offline/permissions.patch)
 
