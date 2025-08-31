@@ -37,6 +37,7 @@ gnome-keyring
 gnome-themes-extra
 gum
 gvfs-mtp
+gvfs-smb
 hypridle
 hyprland
 hyprland-qtutils
@@ -102,7 +103,7 @@ tldr
 tree-sitter-cli
 ttf-cascadia-mono-nerd
 ttf-ia-writer
-ttf-jetbrains-mono
+ttf-jetbrains-mono-nerd
 typora
 tzupdate
 ufw
