@@ -123,6 +123,10 @@ curl -fsSL -o "$cache_dir/airootfs/root/configurator" \
 # Clone Omarchy itself
 git clone -b $OMARCHY_INSTALLER_REF --single-branch https://github.com/$OMARCHY_INSTALLER_REPO.git "$cache_dir/airootfs/root/omarchy"
 
+# Copy icons to the airootfs for offline installation
+mkdir -p "$cache_dir/airootfs/root/.local/share/applications/icons"
+cp /builder/icons/*.png "$cache_dir/airootfs/root/.local/share/applications/icons/"
+
 # Copy the autostart script (we'll need to create an offline version)
 cp /builder/cmds/autostart-offline.sh $cache_dir/airootfs/root/.automated_script.sh
 
