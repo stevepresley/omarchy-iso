@@ -74,6 +74,7 @@ nvim
 obs-studio
 obsidian
 omarchy-chromium
+omarchy-lazyvim
 pamixer
 pinta
 playerctl
@@ -148,7 +149,6 @@ linux-headers
 nvidia-dkms
 nvidia-open-dkms
 nvidia-utils
-omarchy-lazyvim
 pipewire
 pipewire-alsa
 pipewire-jack
