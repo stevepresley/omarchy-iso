@@ -40,7 +40,7 @@ catch_errors() {
   if gum confirm "Retry installation?"; then
     ./.automated_script.sh
   else
-    echo "You can retry later by running: ~/.automated_script.sh"
+    echo "You can retry later by running: ./.automated_script.sh"
   fi
 }
 
