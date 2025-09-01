@@ -5,7 +5,7 @@ chroot_bash() {
   HOME=/home/$OMARCHY_USER \
     arch-chroot -u $OMARCHY_USER /mnt/ \
     env OMARCHY_CHROOT_INSTALL=1 \
-    OFFLINE_INSTALL=1 \
+    OMARCHY_OFFLINE_INSTALL=1 \
     OMARCHY_USER_NAME="$(<user_full_name.txt)" \
     OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
     USER="$OMARCHY_USER" \
