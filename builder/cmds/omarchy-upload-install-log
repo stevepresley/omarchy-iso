@@ -1,20 +1,23 @@
 #!/bin/bash
 
-# Upload Omarchy install log to 0x0.st
+# Upload install log(s) to 0x0.st
 
-LOG_FILE="/var/log/omarchy-install.log"
+ARCHINSTALL_LOG="/var/log/archinstall/install.log"
+OMARCHY_LOG="/var/log/omarchy-install.log"
+COMBINED_LOG="/tmp/combined-install.log"
 
-if [ ! -f "$LOG_FILE" ]; then
-  echo "Error: Install log not found at $LOG_FILE"
+# Combine whatever logs exist (archinstall first, then omarchy)
+cat $ARCHINSTALL_LOG $OMARCHY_LOG >"$COMBINED_LOG" 2>/dev/null
+
+if [ ! -s "$COMBINED_LOG" ]; then
+  echo "Error: No install logs found"
   exit 1
 fi
 
-echo "Uploading Omarchy install log to 0x0.st..."
-echo "The log will expire in 24 hours."
+echo "Uploading installation log to 0x0.st..."
 echo ""
 
-# Upload the file and capture the URL
-URL=$(curl -sF "file=@$LOG_FILE" -Fexpires=24 https://0x0.st)
+URL=$(curl -sF "file=@$COMBINED_LOG" -Fexpires=24 https://0x0.st)
 
 if [ $? -eq 0 ] && [ -n "$URL" ]; then
   echo "✓ Log uploaded successfully!"
@@ -27,4 +30,3 @@ else
   echo "Error: Failed to upload log file"
   exit 1
 fi
-
