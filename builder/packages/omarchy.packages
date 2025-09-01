@@ -151,6 +151,7 @@ linux-headers
 nvidia-dkms
 nvidia-open-dkms
 nvidia-utils
+lib32-nvidia-utils
 pipewire
 pipewire-alsa
 pipewire-jack

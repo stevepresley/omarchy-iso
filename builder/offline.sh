@@ -59,6 +59,7 @@ prepare_offline_mirror() {
     # This assume we've manually built all the AUR packages
     # and made them accessible "online" during the build process:
     (cd $cache_dir/ && git apply /builder/patches/offline/aur-mirror.patch)
+    (cd $cache_dir/ && git apply /builder/patches/offline/enable-multilib.patch)
 
     mkdir -p /tmp/offlinedb
 
