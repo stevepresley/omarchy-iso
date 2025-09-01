@@ -30,3 +30,11 @@ efibootmgr
 intel-media-driver
 amd-ucode
 intel-ucode
+sof-firmware
+base
+base-devel
+linux-firmware
+linux
+limine
+pipewire
+snapper
