@@ -8,8 +8,7 @@ pacman-key --init
 pacman --noconfirm -Sy archlinux-keyring
 pacman --noconfirm -Sy archiso git python-pip sudo base-devel jq
 
-# Use a fixed build cache directory inside the container
-build_cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso)
+build_cache_dir="/var/cache"
 offline_mirror_dir="$build_cache_dir/airootfs/var/cache/omarchy/mirror/offline"
 offline_ruby_dir="$build_cache_dir/airootfs/var/cache/omarchy/ruby"
 
@@ -36,21 +35,16 @@ arch_packages=(
 
 prepare_offline_mirror() {
   # Certain packages in omarchy.packages are AUR packages.
-  # These needs to be pre-built and placed in https://omarchy.blyg.se/aur/os/x86_64/
+  # These needs to be pre-built and placed in https://pkgs.omarchy.org/$arch
   echo "Reading and combining packages from all package files..."
 
-  # Combine all packages from both files into one array
-  all_packages=()
-  for package_file in /builder/packages/omarchy.packages /builder/packages/archinstall.packages; do
-    if [ -f "$package_file" ]; then
-      echo "Reading $package_file..."
-      while IFS= read -r package; do
-        # Skip empty lines and comments
-        [[ -z "$package" || "$package" =~ ^[[:space:]]*# ]] && continue
-        all_packages+=("$package")
-      done <"$package_file"
-    fi
-  done
+  # Combine all packages into one array
+  # Start with base ISO packages (including our arch_packages already appended)
+  all_packages=($(cat "$build_cache_dir/packages.x86_64"))
+
+  # Add packages from omarchy and archinstall
+  [ -f /builder/packages/omarchy.packages ] && all_packages+=($(grep -v '^#' /builder/packages/omarchy.packages | grep -v '^$'))
+  [ -f /builder/packages/archinstall.packages ] && all_packages+=($(grep -v '^#' /builder/packages/archinstall.packages | grep -v '^$'))
 
   if [ ${#all_packages[@]} -gt 0 ]; then
     # This assume we've manually built all the AUR packages
@@ -59,11 +53,6 @@ prepare_offline_mirror() {
     (cd $build_cache_dir/ && git apply /builder/patches/offline/enable-multilib.patch)
 
     mkdir -p /tmp/offlinedb
-
-    # Change DownloadUser from alpm to root to fix permission issues when downloading to cache dir
-    # TODO: We should move the build root from /root/.cache/omarchy/ into /var/cache instead.
-    #       That way alpm:alpm will have access, which is the default pacman download user now days.
-    sed -i 's/^#*DownloadUser = alpm/DownloadUser = root/' /etc/pacman.conf
 
     # Download all the packages to the offline mirror inside the ISO
     echo "Downloading all packages (including AUR) to offline mirror: ${all_packages[@]}"
@@ -100,6 +89,9 @@ mkdir -p $offline_ruby_dir/
 # We base our ISO on the official arch ISO (releng) config
 cp -r archiso/configs/releng/* $build_cache_dir/
 
+# Add our needed packages to packages.x86_64 right away
+printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
+
 # Apply all the general patches early (same as online.sh)
 # Need to do this from the cache_dir
 cd $build_cache_dir
@@ -119,7 +111,7 @@ ruby_tarball="ruby-3.4.5-rails-8.0.2.1-x86_64.tar.gz"
 if [ ! -f "$offline_ruby_dir/$ruby_tarball" ]; then
   echo "Downloading Ruby tarball..."
   curl -fsSL -o "$offline_ruby_dir/$ruby_tarball" \
-    "https://pkgs.omarchy.org/ruby/x86_64/$ruby_tarball"
+    "https://pkgs.omarchy.org/ruby/$ruby_tarball"
 else
   echo "Ruby tarball already cached, skipping download"
 fi
@@ -158,9 +150,6 @@ chmod 755 "$build_cache_dir/airootfs/var/cache/pacman/pkg"
 # file system.
 pip install "${python_packages[@]}"
 
-# Add our needed packages to packages.x86_64
-printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
-
 # We have to do this, because `mkarchiso` copies in the pacman.conf
 # in use during the build process - so it needs to be made offline.
 (cd $build_cache_dir/ && git apply --reverse /builder/patches/offline/enable-multilib.patch)
@@ -173,26 +162,6 @@ cp $build_cache_dir/pacman.conf "$build_cache_dir/airootfs/etc/pacman.conf"
 # but in the container.
 mkdir -p /var/cache/omarchy/mirror
 cp -r "$offline_mirror_dir" "/var/cache/omarchy/mirror/"
-mkdir -p /var/cache/omarchy/ruby
-cp -r "$offline_ruby_dir" "/var/cache/omarchy/"
-
-# Because this weird glitch with archiso, we also need to sync down
-# all the packages we need to build the ISO, but we'll do that in the
-# "host" mirror location, as we don't want them inside the ISO taking up space.
-# We'll also remove tzupdate as it won't be found in upstream mirrors.
-iso_packages=($(cat "$build_cache_dir/packages.x86_64"))
-
-mkdir -p /tmp/cleandb
-
-echo "Populating host offline mirror with ISO packages: ${iso_packages[@]}"
-# We need to exclude AUR packages like tzupdate since they're not in upstream repos
-# They should already be downloaded to the offline mirror from the earlier step
-pacman --config /etc/pacman.conf \
-  --noconfirm -Syw $(echo "${iso_packages[@]}" | sed 's/tzupdate//g') \
-  --cachedir "/var/cache/omarchy/mirror/offline/" \
-  --dbpath /tmp/cleandb
-
-repo-add --new "/var/cache/omarchy/mirror/offline/offline.db.tar.gz" "/var/cache/omarchy/mirror/offline/"*.pkg.tar.zst
 
 # Finally, we assemble the entire ISO
 mkarchiso -v -w "$build_cache_dir/work/" -o "/out/" "$build_cache_dir/"
