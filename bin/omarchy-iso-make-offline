@@ -38,17 +38,13 @@ if [ -d "/var/cache/pacman/pkg" ]; then
   DOCKER_ARGS+=(-v "/var/cache/pacman/pkg:/var/cache/pacman/pkg")
 fi
 
-# Mount persistent cache for offline mirror packages to avoid re-downloading
-OFFLINE_CACHE_DIR="$HOME/.cache/omarchy-offline-mirror"
-mkdir -p "$OFFLINE_CACHE_DIR"
-DOCKER_ARGS+=(-v "$OFFLINE_CACHE_DIR:/var/cache/omarchy")
-
-# Also mount the build cache directory where packages are initially downloaded
+# Mount the build cache directory where packages are downloaded
 # using a dated dir on the host to refresh daily if building multiple times
 BUILD_DATE=$(date +%Y-%m-%d)
 BUILD_CACHE_DIR="$HOME/.cache/omarchy/iso_${BUILD_DATE}/airootfs/var/cache/omarchy"
 mkdir -p "$BUILD_CACHE_DIR"
-DOCKER_ARGS+=(-v "$BUILD_CACHE_DIR:/root/.cache/omarchy/iso/airootfs/var/cache/omarchy")
+# Mount to /var/cache/airootfs/var/cache/omarchy since that's where packages go in the ISO
+DOCKER_ARGS+=(-v "$BUILD_CACHE_DIR:/var/cache/airootfs/var/cache/omarchy")
 
 # Run the builder with assembled args
 docker run "${DOCKER_ARGS[@]}" archlinux/archlinux:latest /$BUILD_SCRIPT
