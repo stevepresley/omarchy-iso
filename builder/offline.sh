@@ -8,19 +8,15 @@ pacman-key --init
 pacman --noconfirm -Sy archlinux-keyring
 pacman --noconfirm -Sy archiso git python-pip sudo base-devel jq
 
-# Use the date from the host if provided (to avoid timezone mismatches), otherwise use container date
-if [ -n "$ISO_BUILD_DATE" ]; then
-  cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso_${ISO_BUILD_DATE})
-else
-  cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso_$(date +%Y-%m-%d))
-fi
-offline_mirror_dir="$cache_dir/airootfs/var/cache/omarchy/mirror/offline"
-offline_ruby_dir="$cache_dir/airootfs/var/cache/omarchy/ruby"
+# Use a fixed build cache directory inside the container
+build_cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso)
+offline_mirror_dir="$build_cache_dir/airootfs/var/cache/omarchy/mirror/offline"
+offline_ruby_dir="$build_cache_dir/airootfs/var/cache/omarchy/ruby"
 
 # We need to fiddle with pip settings
 # in order to install to the correct place
 # as well as ignore some errors to make this less verbose
-export PIP_ROOT="$cache_dir/airootfs/"
+export PIP_ROOT="$build_cache_dir/airootfs/"
 export PIP_ROOT_USER_ACTION="ignore"
 export PIP_NO_WARN_SCRIPT_LOCATION=1
 export PIP_BREAK_SYSTEM_PACKAGES=1
@@ -59,8 +55,8 @@ prepare_offline_mirror() {
   if [ ${#all_packages[@]} -gt 0 ]; then
     # This assume we've manually built all the AUR packages
     # and made them accessible "online" during the build process:
-    (cd $cache_dir/ && git apply /builder/patches/offline/aur-mirror.patch)
-    (cd $cache_dir/ && git apply /builder/patches/offline/enable-multilib.patch)
+    (cd $build_cache_dir/ && git apply /builder/patches/offline/aur-mirror.patch)
+    (cd $build_cache_dir/ && git apply /builder/patches/offline/enable-multilib.patch)
 
     mkdir -p /tmp/offlinedb
 
@@ -71,18 +67,18 @@ prepare_offline_mirror() {
 
     # Download all the packages to the offline mirror inside the ISO
     echo "Downloading all packages (including AUR) to offline mirror: ${all_packages[@]}"
-    pacman --config $cache_dir/pacman.conf \
+    pacman --config $build_cache_dir/pacman.conf \
       --noconfirm -Syw "${all_packages[@]}" \
       --cachedir $offline_mirror_dir/ \
       --dbpath /tmp/offlinedb
 
     repo-add --new "$offline_mirror_dir/offline.db.tar.gz" "$offline_mirror_dir/"*.pkg.tar.zst
 
-    rm "$cache_dir/airootfs/etc/pacman.d/hooks/uncomment-mirrors.hook"
+    rm "$build_cache_dir/airootfs/etc/pacman.d/hooks/uncomment-mirrors.hook"
 
     # Revert the "online" AUR patch, as we'll replace it with the proper
     # offline patched mirror for the ISO later.
-    (cd $cache_dir && git apply -R /builder/patches/offline/aur-mirror.patch)
+    (cd $build_cache_dir && git apply -R /builder/patches/offline/aur-mirror.patch)
   fi
 }
 
@@ -92,21 +88,21 @@ make_archiso_offline() {
   # mirror order by fetching the latest mirror list by default.
 
   # Disable reflector
-  rm "$cache_dir/airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
-  rm -rf "$cache_dir/airootfs/etc/systemd/system/reflector.service.d"
-  rm -rf "$cache_dir/airootfs/etc/xdg/reflector"
+  rm "$build_cache_dir/airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
+  rm -rf "$build_cache_dir/airootfs/etc/systemd/system/reflector.service.d"
+  rm -rf "$build_cache_dir/airootfs/etc/xdg/reflector"
 }
 
-mkdir -p $cache_dir/
+mkdir -p $build_cache_dir/
 mkdir -p $offline_mirror_dir/
 mkdir -p $offline_ruby_dir/
 
 # We base our ISO on the official arch ISO (releng) config
-cp -r archiso/configs/releng/* $cache_dir/
+cp -r archiso/configs/releng/* $build_cache_dir/
 
 # Apply all the general patches early (same as online.sh)
 # Need to do this from the cache_dir
-cd $cache_dir
+cd $build_cache_dir
 for patch in /builder/patches/*.patch; do
   # Skip profiledef.patch as it conflicts with offline/permissions.patch
   if [[ "$(basename "$patch")" != "profiledef.patch" ]]; then
@@ -129,47 +125,47 @@ else
 fi
 
 # Insert the configurator in the root users home folder (default user in the official releng ISO profile).
-mkdir -p "$cache_dir/airootfs/root"
-curl -fsSL -o "$cache_dir/airootfs/root/configurator" \
+mkdir -p "$build_cache_dir/airootfs/root"
+curl -fsSL -o "$build_cache_dir/airootfs/root/configurator" \
   "https://raw.githubusercontent.com/$OMARCHY_CONFIGURATOR_REPO/$OMARCHY_CONFIGURATOR_REF/configurator"
 
 # Clone Omarchy itself
-git clone -b $OMARCHY_INSTALLER_REF --single-branch https://github.com/$OMARCHY_INSTALLER_REPO.git "$cache_dir/airootfs/root/omarchy"
+git clone -b $OMARCHY_INSTALLER_REF --single-branch https://github.com/$OMARCHY_INSTALLER_REPO.git "$build_cache_dir/airootfs/root/omarchy"
 
 # Copy icons to the airootfs for offline installation
-mkdir -p "$cache_dir/airootfs/root/.local/share/applications/icons"
-cp /builder/icons/*.png "$cache_dir/airootfs/root/.local/share/applications/icons/"
+mkdir -p "$build_cache_dir/airootfs/root/.local/share/applications/icons"
+cp /builder/icons/*.png "$build_cache_dir/airootfs/root/.local/share/applications/icons/"
 
 # Copy the autostart script (we'll need to create an offline version)
-cp /builder/cmds/autostart-offline.sh $cache_dir/airootfs/root/.automated_script.sh
+cp /builder/cmds/autostart-offline.sh $build_cache_dir/airootfs/root/.automated_script.sh
 
 # Copy the log upload utility to /usr/local/bin
-mkdir -p "$cache_dir/airootfs/usr/local/bin"
-cp /builder/cmds/omarchy-upload-install-log "$cache_dir/airootfs/usr/local/bin/"
-chmod +x "$cache_dir/airootfs/usr/local/bin/omarchy-upload-install-log"
+mkdir -p "$build_cache_dir/airootfs/usr/local/bin"
+cp /builder/cmds/omarchy-upload-install-log "$build_cache_dir/airootfs/usr/local/bin/"
+chmod +x "$build_cache_dir/airootfs/usr/local/bin/omarchy-upload-install-log"
 
 # Apply offline-specific patches
-(cd $cache_dir/ && git apply /builder/patches/offline/permissions.patch)
+(cd $build_cache_dir/ && git apply /builder/patches/offline/permissions.patch)
 
 # Remove the default motd
-rm "$cache_dir/airootfs/etc/motd"
+rm "$build_cache_dir/airootfs/etc/motd"
 
 # Ensure pacman cache directory exists with proper permissions
-mkdir -p "$cache_dir/airootfs/var/cache/pacman/pkg"
-chmod 755 "$cache_dir/airootfs/var/cache/pacman/pkg"
+mkdir -p "$build_cache_dir/airootfs/var/cache/pacman/pkg"
+chmod 755 "$build_cache_dir/airootfs/var/cache/pacman/pkg"
 
 # Install Python packages for the installer into the ISO
 # file system.
 pip install "${python_packages[@]}"
 
 # Add our needed packages to packages.x86_64
-printf '%s\n' "${arch_packages[@]}" >>"$cache_dir/packages.x86_64"
+printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
 
 # We have to do this, because `mkarchiso` copies in the pacman.conf
 # in use during the build process - so it needs to be made offline.
-(cd $cache_dir/ && git apply --reverse /builder/patches/offline/enable-multilib.patch)
-(cd "$cache_dir" && git apply /builder/patches/offline/offline-mirror.patch)
-cp $cache_dir/pacman.conf "$cache_dir/airootfs/etc/pacman.conf"
+(cd $build_cache_dir/ && git apply --reverse /builder/patches/offline/enable-multilib.patch)
+(cd "$build_cache_dir" && git apply /builder/patches/offline/offline-mirror.patch)
+cp $build_cache_dir/pacman.conf "$build_cache_dir/airootfs/etc/pacman.conf"
 
 # And we also need to duplicate the offline mirror.
 # Because inside the ISO it will look for packages in /var/cache/omarchy/mirror/offline
@@ -184,7 +180,7 @@ cp -r "$offline_ruby_dir" "/var/cache/omarchy/"
 # all the packages we need to build the ISO, but we'll do that in the
 # "host" mirror location, as we don't want them inside the ISO taking up space.
 # We'll also remove tzupdate as it won't be found in upstream mirrors.
-iso_packages=($(cat "$cache_dir/packages.x86_64"))
+iso_packages=($(cat "$build_cache_dir/packages.x86_64"))
 
 mkdir -p /tmp/cleandb
 
@@ -199,4 +195,4 @@ pacman --config /etc/pacman.conf \
 repo-add --new "/var/cache/omarchy/mirror/offline/offline.db.tar.gz" "/var/cache/omarchy/mirror/offline/"*.pkg.tar.zst
 
 # Finally, we assemble the entire ISO
-mkarchiso -v -w "$cache_dir/work/" -o "/out/" "$cache_dir/"
+mkarchiso -v -w "$build_cache_dir/work/" -o "/out/" "$build_cache_dir/"
