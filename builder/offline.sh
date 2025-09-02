@@ -15,6 +15,7 @@ else
   cache_dir=$(realpath --canonicalize-missing ~/.cache/omarchy/iso_$(date +%Y-%m-%d))
 fi
 offline_mirror_dir="$cache_dir/airootfs/var/cache/omarchy/mirror/offline"
+offline_ruby_dir="$cache_dir/airootfs/var/cache/omarchy/ruby"
 
 # We need to fiddle with pip settings
 # in order to install to the correct place
@@ -98,6 +99,7 @@ make_archiso_offline() {
 
 mkdir -p $cache_dir/
 mkdir -p $offline_mirror_dir/
+mkdir -p $offline_ruby_dir/
 
 # We base our ISO on the official arch ISO (releng) config
 cp -r archiso/configs/releng/* $cache_dir/
@@ -115,6 +117,16 @@ cd -
 
 prepare_offline_mirror
 make_archiso_offline
+
+# Download Ruby tarball if not already cached
+ruby_tarball="ruby-3.4.5-rails-8.0.2.1-x86_64.tar.gz"
+if [ ! -f "$offline_ruby_dir/$ruby_tarball" ]; then
+  echo "Downloading Ruby tarball..."
+  curl -fsSL -o "$offline_ruby_dir/$ruby_tarball" \
+    "https://pkgs.omarchy.org/ruby/x86_64/$ruby_tarball"
+else
+  echo "Ruby tarball already cached, skipping download"
+fi
 
 # Insert the configurator in the root users home folder (default user in the official releng ISO profile).
 mkdir -p "$cache_dir/airootfs/root"
@@ -165,6 +177,8 @@ cp $cache_dir/pacman.conf "$cache_dir/airootfs/etc/pacman.conf"
 # but in the container.
 mkdir -p /var/cache/omarchy/mirror
 cp -r "$offline_mirror_dir" "/var/cache/omarchy/mirror/"
+mkdir -p /var/cache/omarchy/ruby
+cp -r "$offline_ruby_dir" "/var/cache/omarchy/"
 
 # Because this weird glitch with archiso, we also need to sync down
 # all the packages we need to build the ISO, but we'll do that in the
