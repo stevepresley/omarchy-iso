@@ -28,23 +28,6 @@ set_tokyo_night_colors() {
   fi
 }
 
-OMARCHY_LOGO='                 ▄▄▄                                                   
- ▄█████▄    ▄███████████▄    ▄███████   ▄███████   ▄███████   ▄█   █▄    ▄█   █▄ 
-███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███
-███   ███  ███   ███   ███  ███   ███  ███   ███  ███   █▀   ███   ███  ███   ███
-███   ███  ███   ███   ███ ▄███▄▄▄███ ▄███▄▄▄██▀  ███       ▄███▄▄▄███▄ ███▄▄▄███
-███   ███  ███   ███   ███ ▀███▀▀▀███ ▀███▀▀▀▀    ███      ▀▀███▀▀▀███  ▀▀▀▀▀▀███
-███   ███  ███   ███   ███  ███   ███ ██████████  ███   █▄   ███   ███  ▄██   ███
-███   ███  ███   ███   ███  ███   ███  ███   ███  ███   ███  ███   ███  ███   ███
- ▀█████▀    ▀█   ███   █▀   ███   █▀   ███   ███  ███████▀   ███   █▀    ▀█████▀ 
-                                       ███   █▀                                  '
-
-clear_logo() {
-  clear
-  echo -e "\033[32m$OMARCHY_LOGO\033[0m\n"
-  echo
-}
-
 run_configurator() {
   set -euo pipefail
 
@@ -127,73 +110,33 @@ chroot_bash() {
     /bin/bash "$@"
 }
 
-catch_errors() {
-  # Show the last lines of the log to help debug
-  if [ -f "/mnt/var/log/omarchy-install.log" ]; then
-    tail -50 "/mnt/var/log/omarchy-install.log"
-  else
-    tail -50 "/var/log/archinstall/install.log"
-  fi
-
-  echo -e "\n\e[31mOmarchy Offline ISO installation failed!\e[0m"
-  echo
-  echo "This command halted with exit code $?:"
-  echo "$BASH_COMMAND"
-  echo
-  echo "Get help from the community via QR code or at https://discord.gg/tXFUdasqhY"
-  echo "                                 "
-  echo "    █▀▀▀▀▀█ ▄ ▄ ▀▄▄▄█ █▀▀▀▀▀█    "
-  echo "    █ ███ █ ▄▄▄▄▀▄▀▄▀ █ ███ █    "
-  echo "    █ ▀▀▀ █ ▄█  ▄█▄▄▀ █ ▀▀▀ █    "
-  echo "    ▀▀▀▀▀▀▀ ▀▄█ █ █ █ ▀▀▀▀▀▀▀    "
-  echo "    ▀▀█▀▀▄▀▀▀▀▄█▀▀█  ▀ █ ▀ █     "
-  echo "    █▄█ ▄▄▀▄▄ ▀ ▄ ▀█▄▄▄▄ ▀ ▀█    "
-  echo "    ▄ ▄▀█ ▀▄▀▀▀▄ ▄█▀▄█▀▄▀▄▀█▀    "
-  echo "    █ ▄▄█▄▀▄█ ▄▄▄  ▀ ▄▀██▀ ▀█    "
-  echo "    ▀ ▀   ▀ █ ▀▄  ▀▀█▀▀▀█▄▀      "
-  echo "    █▀▀▀▀▀█ ▀█  ▄▀▀ █ ▀ █▄▀██    "
-  echo "    █ ███ █ █▀▄▄▀ █▀███▀█▄██▄    "
-  echo "    █ ▀▀▀ █ ██  ▀ █▄█ ▄▄▄█▀ █    "
-  echo "    ▀▀▀▀▀▀▀ ▀ ▀ ▀▀▀  ▀ ▀▀▀▀▀▀    "
-  echo "                                 "
-
-  if [[ -z ${OMARCHY_USER-} ]]; then
-    echo "You can retry by running: ~/.automated_script.sh"
-  else
-    echo "You can retry by running: bash ~/.local/share/omarchy/install.sh || bash"
-    chroot_bash
-  fi
-}
-
-trap catch_errors ERR
-
 if [[ $(tty) == "/dev/tty1" ]]; then
-  set_tokyo_night_colors
+  # Set log file to pull from in trap
+  LOG_FILE="/var/log/archinstall/install.log"
+  OMARCHY_PATH="/root/omarchy"
+  OMARCHY_INSTALL="/root/omarchy/install"
 
-  # Configure gum spinner to match theme
-  export GUM_SPIN_SPINNER="line"
-  export GUM_SPIN_SHOW_ERROR="true" # Show output if command fails
-  export GUM_SPIN_ALIGN="right"
+  source "$OMARCHY_INSTALL/helpers/size.sh"
+  source "$OMARCHY_INSTALL/helpers/ansi-codes.sh"
+  source "$OMARCHY_INSTALL/helpers/logo.sh"
+  source "$OMARCHY_INSTALL/helpers/gum-styling.sh"
+  source "$OMARCHY_INSTALL/preflight/trap-errors.sh"
+
+  set_tokyo_night_colors
 
   run_configurator
 
   clear_logo
 
-  # Export functions so they're available in the subshell
-  export -f install_base_system
-
-  # Run base system installation with spinner
-  gum spin --title "Formatting and installing base system..." -- bash -c 'install_base_system'
-
-  echo -e "Base system installed \033[32m[X]\033[0m"
+  # Run archinstall
+  install_base_system &>/dev/null
 
   # Get username from the config file after installation
   OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
 
-  # Install gum so we can have spinners
+  # Install gum early so we have it for formatting
   chroot_bash -lc "sudo pacman -S --noconfirm --needed gum" >/dev/null
 
   # Run Omarchy installer directly (skip boot.sh since it would try to clone again)
-  # The omarchy installer will handle its own spinner/UI
   chroot_bash -lc "source /home/$OMARCHY_USER/.local/share/omarchy/install.sh || bash"
 fi
