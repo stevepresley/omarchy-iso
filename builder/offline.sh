@@ -30,6 +30,7 @@ arch_packages=(
   gum
   jq
   openssl
+  plymouth
   tzupdate # This is technically an AUR package
 )
 
@@ -96,10 +97,7 @@ printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
 # Need to do this from the cache_dir
 cd $build_cache_dir
 for patch in /builder/patches/*.patch; do
-  # Skip profiledef.patch as it conflicts with offline/permissions.patch
-  if [[ "$(basename "$patch")" != "profiledef.patch" ]]; then
-    git apply "$patch"
-  fi
+  git apply "$patch"
 done
 cd -
 
@@ -127,6 +125,18 @@ git clone -b $OMARCHY_INSTALLER_REF --single-branch https://github.com/$OMARCHY_
 # Copy icons to the airootfs for offline installation
 mkdir -p "$build_cache_dir/airootfs/root/.local/share/applications/icons"
 cp /builder/icons/*.png "$build_cache_dir/airootfs/root/.local/share/applications/icons/"
+
+# Copy plymouth theme to the system location
+mkdir -p "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy"
+cp "$build_cache_dir/airootfs/root/omarchy/default/plymouth/"* "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy/"
+
+# Configure plymouth to use our theme
+mkdir -p "$build_cache_dir/airootfs/etc/plymouth"
+tee "$build_cache_dir/airootfs/etc/plymouth/plymouthd.conf" >/dev/null <<EOF
+[Daemon]
+Theme=omarchy
+ShowDelay=0
+EOF
 
 # Copy the autostart script (we'll need to create an offline version)
 cp /builder/cmds/autostart-offline.sh $build_cache_dir/airootfs/root/.automated_script.sh

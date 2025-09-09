@@ -1,0 +1,44 @@
+--- a/airootfs/etc/mkinitcpio.conf.d/archiso.conf
++++ b/airootfs/etc/mkinitcpio.conf.d/archiso.conf
+@@ -1,3 +1,4 @@
+-HOOKS=(base udev microcode modconf kms memdisk archiso archiso_loop_mnt archiso_pxe_common archiso_pxe_nbd archiso_pxe_http archiso_pxe_nfs block filesystems keyboard)
++HOOKS=(base udev plymouth microcode modconf kms memdisk archiso archiso_loop_mnt archiso_pxe_common archiso_pxe_nbd archiso_pxe_http archiso_pxe_nfs block filesystems keyboard)
++MODULES=(i915 amdgpu radeon nouveau)
+ COMPRESSION="xz"
+ COMPRESSION_OPTIONS=(-9e)
+
+--- a/grub/grub.cfg
++++ b/grub/grub.cfg
+@@ -53,13 +53,13 @@ timeout_style=menu
+
+ menuentry "Arch Linux install medium (%ARCH%, ${archiso_platform})" --class arch --class gnu-linux --class gnu --class os --id 'archlinux' {
+     set gfxpayload=keep
+-    linux /%INSTALL_DIR%/boot/%ARCH%/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisosearchuuid=%ARCHISO_UUID%
++    linux /%INSTALL_DIR%/boot/%ARCH%/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisosearchuuid=%ARCHISO_UUID% quiet splash
+     initrd /%INSTALL_DIR%/boot/%ARCH%/initramfs-linux.img
+ }
+
+ menuentry "Arch Linux install medium with speakup screen reader (%ARCH%, ${archiso_platform})" --hotkey s --class arch --class gnu-linux --class gnu --class os --id 'archlinux-accessibility' {
+     set gfxpayload=keep
+-    linux /%INSTALL_DIR%/boot/%ARCH%/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisosearchuuid=%ARCHISO_UUID% accessibility=on
++    linux /%INSTALL_DIR%/boot/%ARCH%/vmlinuz-linux archisobasedir=%INSTALL_DIR% archisosearchuuid=%ARCHISO_UUID% accessibility=on quiet splash
+     initrd /%INSTALL_DIR%/boot/%ARCH%/initramfs-linux.img
+ }
+
+--- a/syslinux/archiso_sys-linux.cfg
++++ b/syslinux/archiso_sys-linux.cfg
+@@ -6,7 +6,7 @@ ENDTEXT
+ MENU LABEL Arch Linux install medium (x86_64, BIOS)
+ LINUX /%INSTALL_DIR%/boot/x86_64/vmlinuz-linux
+ INITRD /%INSTALL_DIR%/boot/x86_64/initramfs-linux.img
+-APPEND archisobasedir=%INSTALL_DIR% archisosearchuuid=%ARCHISO_UUID%
++APPEND archisobasedir=%INSTALL_DIR% archisosearchuuid=%ARCHISO_UUID% quiet splash
+
+ # Accessibility boot option
+ LABEL arch64speech
+@@ -17,4 +17,4 @@ ENDTEXT
+ MENU LABEL Arch Linux install medium (x86_64, BIOS) with ^speech
+ LINUX /%INSTALL_DIR%/boot/x86_64/vmlinuz-linux
+ INITRD /%INSTALL_DIR%/boot/x86_64/initramfs-linux.img
+-APPEND archisobasedir=%INSTALL_DIR% archisosearchuuid=%ARCHISO_UUID% accessibility=on
++APPEND archisobasedir=%INSTALL_DIR% archisosearchuuid=%ARCHISO_UUID% accessibility=on quiet splash
