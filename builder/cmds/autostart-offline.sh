@@ -112,14 +112,15 @@ chroot_bash() {
 
 if [[ $(tty) == "/dev/tty1" ]]; then
   # Set log file to pull from in trap
-  LOG_FILE="/var/log/archinstall/install.log"
-  OMARCHY_PATH="/root/omarchy"
-  OMARCHY_INSTALL="/root/omarchy/install"
+  export LOG_FILE="/var/log/omarchy-install.log"
+  export OMARCHY_PATH="/root/omarchy"
+  export OMARCHY_INSTALL="/root/omarchy/install"
 
   source "$OMARCHY_INSTALL/helpers/size.sh"
   source "$OMARCHY_INSTALL/helpers/ansi-codes.sh"
   source "$OMARCHY_INSTALL/helpers/logo.sh"
   source "$OMARCHY_INSTALL/helpers/gum-styling.sh"
+  source "$OMARCHY_INSTALL/helpers/tail-log-output.sh"
   source "$OMARCHY_INSTALL/preflight/trap-errors.sh"
 
   set_tokyo_night_colors
@@ -128,8 +129,13 @@ if [[ $(tty) == "/dev/tty1" ]]; then
 
   clear_logo
 
-  # Run archinstall
-  install_base_system &>/dev/null
+  gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing Omarchy..."
+
+  touch "$LOG_FILE"
+
+  start_log_output
+  install_base_system 2>&1 | sed -u 's/\x1b\[[0-9;]*[a-zA-Z]//g' >>"$LOG_FILE"
+  cleanup
 
   # Get username from the config file after installation
   OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"

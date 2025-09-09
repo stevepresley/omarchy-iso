@@ -136,9 +136,6 @@ mkdir -p "$build_cache_dir/airootfs/usr/local/bin"
 cp /builder/cmds/omarchy-upload-install-log "$build_cache_dir/airootfs/usr/local/bin/"
 chmod +x "$build_cache_dir/airootfs/usr/local/bin/omarchy-upload-install-log"
 
-# Apply offline-specific patches
-(cd $build_cache_dir/ && git apply /builder/patches/offline/permissions.patch)
-
 # Remove the default motd
 rm "$build_cache_dir/airootfs/etc/motd"
 
