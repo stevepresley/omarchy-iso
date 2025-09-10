@@ -115,6 +115,7 @@ if [[ $(tty) == "/dev/tty1" ]]; then
   export LOG_FILE="/var/log/omarchy-install.log"
   export OMARCHY_PATH="/root/omarchy"
   export OMARCHY_INSTALL="/root/omarchy/install"
+  export OMARCHY_OFFLINE_INSTALL=1
 
   source "$OMARCHY_INSTALL/helpers/size.sh"
   source "$OMARCHY_INSTALL/helpers/ansi-codes.sh"
