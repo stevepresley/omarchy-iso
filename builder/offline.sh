@@ -119,7 +119,7 @@ curl -fsSL -o "$build_cache_dir/airootfs/root/configurator" \
   "https://raw.githubusercontent.com/$OMARCHY_CONFIGURATOR_REPO/$OMARCHY_CONFIGURATOR_REF/configurator"
 
 # Clone Omarchy itself
-git clone -b $OMARCHY_INSTALLER_REF --single-branch https://github.com/$OMARCHY_INSTALLER_REPO.git "$build_cache_dir/airootfs/root/omarchy"
+git clone -b $OMARCHY_INSTALLER_REF https://github.com/$OMARCHY_INSTALLER_REPO.git "$build_cache_dir/airootfs/root/omarchy"
 
 # Copy icons to the airootfs for offline installation
 mkdir -p "$build_cache_dir/airootfs/root/.local/share/applications/icons"
