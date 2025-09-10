@@ -49,6 +49,7 @@ imagemagick
 impala
 imv
 inetutils
+intel-media-driver
 jq
 kdenlive
 kvantum-qt5
@@ -57,6 +58,7 @@ lazygit
 less
 libqalculate
 libreoffice
+libva-intel-driver
 llvm
 localsend
 luarocks
@@ -114,6 +116,7 @@ walker-bin
 waybar
 wf-recorder
 whois
+wireless-regdb
 wiremix
 wireplumber
 wl-clip-persist
