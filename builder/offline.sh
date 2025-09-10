@@ -54,7 +54,7 @@ prepare_offline_mirror() {
 
     mkdir -p /tmp/offlinedb
 
-    # Download all the packages to the offline mirror inside the ISO
+    # Download all the paclibffikages to the offline mirror inside the ISO
     echo "Downloading all packages (including AUR) to offline mirror: ${all_packages[@]}"
     pacman --config $build_cache_dir/pacman.conf \
       --noconfirm -Syw "${all_packages[@]}" \
@@ -96,10 +96,7 @@ printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
 # Need to do this from the cache_dir
 cd $build_cache_dir
 for patch in /builder/patches/*.patch; do
-  # Skip profiledef.patch as it conflicts with offline/permissions.patch
-  if [[ "$(basename "$patch")" != "profiledef.patch" ]]; then
-    git apply "$patch"
-  fi
+  git apply "$patch"
 done
 cd -
 
