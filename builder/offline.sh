@@ -30,6 +30,7 @@ arch_packages=(
   gum
   jq
   openssl
+  plymouth
   tzupdate # This is technically an AUR package
 )
 
@@ -98,6 +99,10 @@ git clone -b $OMARCHY_INSTALLER_REF https://github.com/$OMARCHY_INSTALLER_REPO.g
 # Make log uploader available in the ISO too
 mkdir -p "$build_cache_dir/airootfs/usr/local/bin/"
 cp "$build_cache_dir/airootfs/root/omarchy/bin/omarchy-upload-log" "$build_cache_dir/airootfs/usr/local/bin/omarchy-upload-log"
+
+# Copy the Omarchy Plymouth theme to the ISO
+mkdir -p "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy"
+cp -r "$build_cache_dir/airootfs/root/omarchy/default/plymouth/"* "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy/"
 
 # Download the configurator
 mkdir -p "$build_cache_dir/airootfs/root"
