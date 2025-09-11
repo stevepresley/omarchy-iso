@@ -53,7 +53,7 @@ docker run "${DOCKER_ARGS[@]}" archlinux/archlinux:latest /$BUILD_SCRIPT
 # Move as install ref
 latest_iso=$(\ls -t "$BUILD_RELEASE_PATH"/*.iso | head -n1)
 iso_ref="${latest_iso%.*}-$OMARCHY_INSTALLER_REF.iso"
-mv "$latest_iso" "$iso_ref"
+mv -f "$latest_iso" "$iso_ref"
 
 # Offer to boot the new build
 if [[ $1 != "--no-boot-offer" ]]; then
