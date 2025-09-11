@@ -91,6 +91,7 @@ EOF
   find /mnt/home/$OMARCHY_USER/.local/share/omarchy -type f -path "*/bin/*" -exec chmod +x {} \;
   # Ensure install.sh is executable
   chmod +x /mnt/home/$OMARCHY_USER/.local/share/omarchy/install.sh 2>/dev/null || true
+  chmod +x /mnt/home/$OMARCHY_USER/.local/share/omarchy/boot.sh 2>/dev/null || true
 }
 
 chroot_bash() {
