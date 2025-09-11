@@ -91,7 +91,6 @@ rm "$build_cache_dir/airootfs/etc/motd"
 
 # Bring in our configs
 cp -r /configs/* $build_cache_dir/
-cat $build_cache_dir/grub/grub.cfg
 
 # Clone Omarchy itself
 git clone -b $OMARCHY_INSTALLER_REF https://github.com/$OMARCHY_INSTALLER_REPO.git "$build_cache_dir/airootfs/root/omarchy"
