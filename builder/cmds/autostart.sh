@@ -14,38 +14,6 @@ chroot_bash() {
     /bin/bash "$@"
 }
 
-catch_errors() {
-  echo -e "\n\e[31mOmarchy ISO installation failed!\e[0m"
-  echo
-  echo "This command halted with exit code $?:"
-  echo "$BASH_COMMAND"
-  echo
-  echo "Get help from the community via QR code or at https://discord.gg/tXFUdasqhY"
-  echo "                                 "
-  echo "    █▀▀▀▀▀█ ▄ ▄ ▀▄▄▄█ █▀▀▀▀▀█    "
-  echo "    █ ███ █ ▄▄▄▄▀▄▀▄▀ █ ███ █    "
-  echo "    █ ▀▀▀ █ ▄█  ▄█▄▄▀ █ ▀▀▀ █    "
-  echo "    ▀▀▀▀▀▀▀ ▀▄█ █ █ █ ▀▀▀▀▀▀▀    "
-  echo "    ▀▀█▀▀▄▀▀▀▀▄█▀▀█  ▀ █ ▀ █     "
-  echo "    █▄█ ▄▄▀▄▄ ▀ ▄ ▀█▄▄▄▄ ▀ ▀█    "
-  echo "    ▄ ▄▀█ ▀▄▀▀▀▄ ▄█▀▄█▀▄▀▄▀█▀    "
-  echo "    █ ▄▄█▄▀▄█ ▄▄▄  ▀ ▄▀██▀ ▀█    "
-  echo "    ▀ ▀   ▀ █ ▀▄  ▀▀█▀▀▀█▄▀      "
-  echo "    █▀▀▀▀▀█ ▀█  ▄▀▀ █ ▀ █▄▀██    "
-  echo "    █ ███ █ █▀▄▄▀ █▀███▀█▄██▄    "
-  echo "    █ ▀▀▀ █ ██  ▀ █▄█ ▄▄▄█▀ █    "
-  echo "    ▀▀▀▀▀▀▀ ▀ ▀ ▀▀▀  ▀ ▀▀▀▀▀▀    "
-  echo "                                 "
-
-  if gum confirm "Retry installation?"; then
-    ./.automated_script.sh
-  else
-    echo "You can retry later by running: ./.automated_script.sh"
-  fi
-}
-
-trap catch_errors ERR
-
 if [[ $(tty) == "/dev/tty1" ]]; then
   # Configurator for user information, disk selection, and wifi configuration
   ./configurator
