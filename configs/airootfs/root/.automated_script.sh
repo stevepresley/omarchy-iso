@@ -112,12 +112,12 @@ if [[ $(tty) == "/dev/tty1" ]]; then
   export OMARCHY_INSTALL="/root/omarchy/install"
   export OMARCHY_OFFLINE_INSTALL=1
 
-  source "$OMARCHY_INSTALL/helpers/size.sh"
+  source "$OMARCHY_INSTALL/preflight/set-size-vars.sh"
   source "$OMARCHY_INSTALL/helpers/ansi-codes.sh"
   source "$OMARCHY_INSTALL/helpers/logo.sh"
-  source "$OMARCHY_INSTALL/helpers/gum-styling.sh"
+  source "$OMARCHY_INSTALL/preflight/set-gum-styling.sh"
   source "$OMARCHY_INSTALL/helpers/tail-log-output.sh"
-  source "$OMARCHY_INSTALL/preflight/trap-errors.sh"
+  source "$OMARCHY_INSTALL/helpers/trap-errors.sh"
 
   set_tokyo_night_colors
 
