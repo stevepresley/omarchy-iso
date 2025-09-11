@@ -42,21 +42,19 @@ prepare_offline_mirror() {
   # Start with base ISO packages (including our arch_packages already appended)
   all_packages=($(cat "$build_cache_dir/packages.x86_64"))
 
-  # Add packages from omarchy and archinstall
-  [ -f /builder/packages/omarchy.packages ] && all_packages+=($(grep -v '^#' /builder/packages/omarchy.packages | grep -v '^$'))
-  [ -f /builder/packages/archinstall.packages ] && all_packages+=($(grep -v '^#' /builder/packages/archinstall.packages | grep -v '^$'))
+  # Add packages from the omarchy installer's unified package list
+  all_packages+=($(grep -v '^#' "$build_cache_dir/airootfs/root/omarchy/install/omarchy-base.packages" | grep -v '^$'))
+  all_packages+=($(grep -v '^#' "$build_cache_dir/airootfs/root/omarchy/install/omarchy-other.packages" | grep -v '^$'))
+
+  # Add archinstall needed packages
+  all_packages+=($(grep -v '^#' /builder/packages/archinstall.packages | grep -v '^$'))
 
   if [ ${#all_packages[@]} -gt 0 ]; then
-    # This assume we've manually built all the AUR packages
-    # and made them accessible "online" during the build process:
-    (cd $build_cache_dir/ && git apply /builder/patches/offline/aur-mirror.patch)
-    (cd $build_cache_dir/ && git apply /builder/patches/offline/enable-multilib.patch)
-
     mkdir -p /tmp/offlinedb
 
-    # Download all the paclibffikages to the offline mirror inside the ISO
+    # Download all the packages to the offline mirror inside the ISO
     echo "Downloading all packages (including AUR) to offline mirror: ${all_packages[@]}"
-    pacman --config $build_cache_dir/pacman.conf \
+    pacman --config /builder/pacman-mirror.conf \
       --noconfirm -Syw "${all_packages[@]}" \
       --cachedir $offline_mirror_dir/ \
       --dbpath /tmp/offlinedb
@@ -64,10 +62,6 @@ prepare_offline_mirror() {
     repo-add --new "$offline_mirror_dir/offline.db.tar.gz" "$offline_mirror_dir/"*.pkg.tar.zst
 
     rm "$build_cache_dir/airootfs/etc/pacman.d/hooks/uncomment-mirrors.hook"
-
-    # Revert the "online" AUR patch, as we'll replace it with the proper
-    # offline patched mirror for the ISO later.
-    (cd $build_cache_dir && git apply -R /builder/patches/offline/aur-mirror.patch)
   fi
 }
 
@@ -82,23 +76,36 @@ make_archiso_offline() {
   rm -rf "$build_cache_dir/airootfs/etc/xdg/reflector"
 }
 
+#######################
+# Build process start
+#######################
+
 mkdir -p $build_cache_dir/
 mkdir -p $offline_mirror_dir/
 mkdir -p $offline_ruby_dir/
 
 # We base our ISO on the official arch ISO (releng) config
 cp -r archiso/configs/releng/* $build_cache_dir/
+rm "$build_cache_dir/airootfs/etc/motd"
 
-# Add our needed packages to packages.x86_64 right away
+# Bring in our configs
+cp -r /configs/* $build_cache_dir/
+cat $build_cache_dir/grub/grub.cfg
+
+# Clone Omarchy itself
+git clone -b $OMARCHY_INSTALLER_REF https://github.com/$OMARCHY_INSTALLER_REPO.git "$build_cache_dir/airootfs/root/omarchy"
+
+# Make log uploader available in the ISO too
+mkdir -p "$build_cache_dir/airootfs/usr/local/bin/"
+cp "$build_cache_dir/airootfs/root/omarchy/bin/omarchy-upload-log" "$build_cache_dir/airootfs/usr/local/bin/omarchy-upload-log"
+
+# Download the configurator
+mkdir -p "$build_cache_dir/airootfs/root"
+curl -fsSL -o "$build_cache_dir/airootfs/root/configurator" \
+  "https://raw.githubusercontent.com/$OMARCHY_CONFIGURATOR_REPO/$OMARCHY_CONFIGURATOR_REF/configurator"
+
+# Add our additional packages to packages.x86_64
 printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
-
-# Apply all the general patches early (same as online.sh)
-# Need to do this from the cache_dir
-cd $build_cache_dir
-for patch in /builder/patches/*.patch; do
-  git apply "$patch"
-done
-cd -
 
 prepare_offline_mirror
 make_archiso_offline
@@ -113,49 +120,19 @@ else
   echo "Ruby tarball already cached, skipping download"
 fi
 
-# Insert the configurator in the root users home folder (default user in the official releng ISO profile).
-mkdir -p "$build_cache_dir/airootfs/root"
-curl -fsSL -o "$build_cache_dir/airootfs/root/configurator" \
-  "https://raw.githubusercontent.com/$OMARCHY_CONFIGURATOR_REPO/$OMARCHY_CONFIGURATOR_REF/configurator"
-
-# Clone Omarchy itself
-git clone -b $OMARCHY_INSTALLER_REF https://github.com/$OMARCHY_INSTALLER_REPO.git "$build_cache_dir/airootfs/root/omarchy"
-
-# Copy icons to the airootfs for offline installation
-mkdir -p "$build_cache_dir/airootfs/root/.local/share/applications/icons"
-cp /builder/icons/*.png "$build_cache_dir/airootfs/root/.local/share/applications/icons/"
-
-# Copy the autostart script (we'll need to create an offline version)
-cp /builder/cmds/autostart-offline.sh $build_cache_dir/airootfs/root/.automated_script.sh
-
-# Copy the log upload utility to /usr/local/bin
-mkdir -p "$build_cache_dir/airootfs/usr/local/bin"
-cp /builder/cmds/omarchy-upload-install-log "$build_cache_dir/airootfs/usr/local/bin/"
-chmod +x "$build_cache_dir/airootfs/usr/local/bin/omarchy-upload-install-log"
-
-# Remove the default motd
-rm "$build_cache_dir/airootfs/etc/motd"
-
-# Ensure pacman cache directory exists with proper permissions
-mkdir -p "$build_cache_dir/airootfs/var/cache/pacman/pkg"
-chmod 755 "$build_cache_dir/airootfs/var/cache/pacman/pkg"
-
 # Install Python packages for the installer into the ISO
 # file system.
 pip install "${python_packages[@]}"
 
-# We have to do this, because `mkarchiso` copies in the pacman.conf
-# in use during the build process - so it needs to be made offline.
-(cd $build_cache_dir/ && git apply --reverse /builder/patches/offline/enable-multilib.patch)
-(cd "$build_cache_dir" && git apply /builder/patches/offline/offline-mirror.patch)
+# Copy the offline pacman.conf to the ISO's /etc directory
+# so the live environment uses our offline mirror when booted
 cp $build_cache_dir/pacman.conf "$build_cache_dir/airootfs/etc/pacman.conf"
 
-# And we also need to duplicate the offline mirror.
-# Because inside the ISO it will look for packages in /var/cache/omarchy/mirror/offline
-# but that means the build of the ISO itself will also look at this location
-# but in the container.
+# Create a symlink to the offline mirror instead of duplicating it.
+# mkarchiso needs packages at /var/cache/omarchy/mirror/offline in the container,
+# but they're actually in $build_cache_dir/airootfs/var/cache/omarchy/mirror/offline
 mkdir -p /var/cache/omarchy/mirror
-cp -r "$offline_mirror_dir" "/var/cache/omarchy/mirror/"
+ln -s "$offline_mirror_dir" "/var/cache/omarchy/mirror/offline"
 
 # Finally, we assemble the entire ISO
 mkarchiso -v -w "$build_cache_dir/work/" -o "/out/" "$build_cache_dir/"

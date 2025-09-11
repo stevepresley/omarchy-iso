@@ -31,6 +31,7 @@ DOCKER_ARGS=(
   -v "$BUILD_ROOT/$BUILD_SCRIPT:/$BUILD_SCRIPT:ro"
   -v "$BUILD_ROOT/archiso:/archiso:ro"
   -v "$BUILD_ROOT/builder:/builder:ro"
+  -v "$BUILD_ROOT/configs:/configs:ro"
 )
 
 # Use local pacman cache if you already have one on host to speed up repeat runs
@@ -48,9 +49,6 @@ DOCKER_ARGS+=(-v "$BUILD_CACHE_DIR:/var/cache/airootfs/var/cache/omarchy")
 
 # Run the builder with assembled args
 docker run "${DOCKER_ARGS[@]}" archlinux/archlinux:latest /$BUILD_SCRIPT
-
-# Make iso accessible to all
-sudo chmod 777 -R "$BUILD_RELEASE_PATH"
 
 # Move as install ref
 latest_iso=$(\ls -t "$BUILD_RELEASE_PATH"/*.iso | head -n1)
