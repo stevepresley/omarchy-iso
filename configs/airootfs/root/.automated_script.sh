@@ -31,8 +31,12 @@ set_tokyo_night_colors() {
 run_configurator() {
   set -euo pipefail
 
-  # Configurator for user information, disk selection, and wifi configuration
-  NETWORK_NOT_NEEDED=true ./configurator
+  # Check if this is an online or offline build
+  if [ "${OMARCHY_INSTALL_MODE:-offline}" = "online" ]; then
+    ./configurator
+  else
+    NETWORK_NOT_NEEDED=true ./configurator
+  fi
 
   # Get username from installer config for reliable error recovery
   export OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
@@ -97,11 +101,13 @@ chroot_bash() {
   HOME=/home/$OMARCHY_USER \
     arch-chroot -u $OMARCHY_USER /mnt/ \
     env OMARCHY_CHROOT_INSTALL=1 \
-    OMARCHY_OFFLINE_INSTALL=1 \
+    OMARCHY_INSTALL_MODE="${OMARCHY_INSTALL_MODE:-offline}" \
     OMARCHY_USER_NAME="$(<user_full_name.txt)" \
     OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
     USER="$OMARCHY_USER" \
     HOME="/home/$OMARCHY_USER" \
+    OMARCHY_REPO="$(<omarchy_installer_repo.txt)" \
+    OMARCHY_REF="$(<omarchy_installer_ref.txt)" \
     /bin/bash "$@"
 }
 
@@ -110,7 +116,13 @@ if [[ $(tty) == "/dev/tty1" ]]; then
   export LOG_FILE="/var/log/omarchy-install.log"
   export OMARCHY_PATH="/root/omarchy"
   export OMARCHY_INSTALL="/root/omarchy/install"
-  export OMARCHY_OFFLINE_INSTALL=1
+
+  # Set install mode based on build mode file, default to offline
+  if [ -f /root/omarchy_install_mode.txt ]; then
+    export OMARCHY_INSTALL_MODE="$(cat /root/omarchy_install_mode.txt)"
+  else
+    export OMARCHY_INSTALL_MODE="offline"
+  fi
 
   source "$OMARCHY_INSTALL/preflight/set-size-vars.sh"
   source "$OMARCHY_INSTALL/helpers/ansi-codes.sh"

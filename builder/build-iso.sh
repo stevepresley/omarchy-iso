@@ -2,6 +2,9 @@
 
 set -e
 
+# Build mode: offline (default) or online                                                                                                         │ │
+OMARCHY_BUILD_MODE="${OMARCHY_BUILD_MODE:-offline}"
+
 # Note that these are packages installed to the Arch container
 # used to build the ISO.
 pacman-key --init
@@ -55,7 +58,7 @@ prepare_offline_mirror() {
 
     # Download all the packages to the offline mirror inside the ISO
     echo "Downloading all packages (including AUR) to offline mirror: ${all_packages[@]}"
-    pacman --config /builder/pacman-mirror.conf \
+    pacman --config /configs/pacman-online.conf \
       --noconfirm -Syw "${all_packages[@]}" \
       --cachedir $offline_mirror_dir/ \
       --dbpath /tmp/offlinedb
@@ -66,12 +69,8 @@ prepare_offline_mirror() {
   fi
 }
 
-make_archiso_offline() {
-  # This function will simply disable any online activity we have.
-  # for instance the reflector.service which tries to optimize
-  # mirror order by fetching the latest mirror list by default.
-
-  # Disable reflector
+disable_reflector() {
+  # Avoid using reflector for mirror identification as we are relying on the global CDN
   rm "$build_cache_dir/airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
   rm -rf "$build_cache_dir/airootfs/etc/systemd/system/reflector.service.d"
   rm -rf "$build_cache_dir/airootfs/etc/xdg/reflector"
@@ -86,8 +85,9 @@ mkdir -p $offline_mirror_dir/
 mkdir -p $offline_ruby_dir/
 
 # We base our ISO on the official arch ISO (releng) config
-cp -r archiso/configs/releng/* $build_cache_dir/
+cp -r /archiso/configs/releng/* $build_cache_dir/
 rm "$build_cache_dir/airootfs/etc/motd"
+disable_reflector
 
 # Bring in our configs
 cp -r /configs/* $build_cache_dir/
@@ -108,35 +108,50 @@ mkdir -p "$build_cache_dir/airootfs/root"
 curl -fsSL -o "$build_cache_dir/airootfs/root/configurator" \
   "https://raw.githubusercontent.com/$OMARCHY_CONFIGURATOR_REPO/$OMARCHY_CONFIGURATOR_REF/configurator"
 
+if [ "$OMARCHY_BUILD_MODE" = "online" ]; then
+  echo "$OMARCHY_INSTALLER_REPO" >$build_cache_dir/airootfs/root/omarchy_installer_repo.txt
+  echo "$OMARCHY_INSTALLER_REF" >$build_cache_dir/airootfs/root/omarchy_installer_ref.txt
+  echo "$OMARCHY_INSTALLER_URL" >$build_cache_dir/airootfs/root/omarchy_installer_url.txt
+  echo "online" >$build_cache_dir/airootfs/root/omarchy_install_mode.txt
+else
+  echo "offline" >$build_cache_dir/airootfs/root/omarchy_install_mode.txt
+fi
+
 # Add our additional packages to packages.x86_64
 printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
 
-prepare_offline_mirror
-make_archiso_offline
+if [ "$OMARCHY_BUILD_MODE" = "offline" ]; then
+  prepare_offline_mirror
 
-# Download Ruby tarball if not already cached
-ruby_tarball="ruby-3.4.5-rails-8.0.2.1-x86_64.tar.gz"
-if [ ! -f "$offline_ruby_dir/$ruby_tarball" ]; then
-  echo "Downloading Ruby tarball..."
-  curl -fsSL -o "$offline_ruby_dir/$ruby_tarball" \
-    "https://pkgs.omarchy.org/ruby/$ruby_tarball"
-else
-  echo "Ruby tarball already cached, skipping download"
+  # Download Ruby tarball if not already cached
+  ruby_tarball="ruby-3.4.5-rails-8.0.2.1-x86_64.tar.gz"
+  if [ ! -f "$offline_ruby_dir/$ruby_tarball" ]; then
+    echo "Downloading Ruby tarball..."
+    curl -fsSL -o "$offline_ruby_dir/$ruby_tarball" \
+      "https://pkgs.omarchy.org/ruby/$ruby_tarball"
+  else
+    echo "Ruby tarball already cached, skipping download"
+  fi
+
+  # Create a symlink to the offline mirror instead of duplicating it.
+  # mkarchiso needs packages at /var/cache/omarchy/mirror/offline in the container,
+  # but they're actually in $build_cache_dir/airootfs/var/cache/omarchy/mirror/offline
+  mkdir -p /var/cache/omarchy/mirror
+  ln -s "$offline_mirror_dir" "/var/cache/omarchy/mirror/offline"
 fi
 
 # Install Python packages for the installer into the ISO
 # file system.
 pip install "${python_packages[@]}"
 
-# Copy the offline pacman.conf to the ISO's /etc directory
-# so the live environment uses our offline mirror when booted
-cp $build_cache_dir/pacman.conf "$build_cache_dir/airootfs/etc/pacman.conf"
+if [ "$OMARCHY_BUILD_MODE" = "online" ]; then
+  # Copy the online version so we use it for build and ISO boot
+  cp $build_cache_dir/pacman-online.conf $build_cache_dir/pacman.conf
+fi
 
-# Create a symlink to the offline mirror instead of duplicating it.
-# mkarchiso needs packages at /var/cache/omarchy/mirror/offline in the container,
-# but they're actually in $build_cache_dir/airootfs/var/cache/omarchy/mirror/offline
-mkdir -p /var/cache/omarchy/mirror
-ln -s "$offline_mirror_dir" "/var/cache/omarchy/mirror/offline"
+# Copy the pacman.conf to the ISO's /etc directory so the live environment uses our
+# same config when booted
+cp $build_cache_dir/pacman.conf "$build_cache_dir/airootfs/etc/pacman.conf"
 
 # Finally, we assemble the entire ISO
 mkarchiso -v -w "$build_cache_dir/work/" -o "/out/" "$build_cache_dir/"
