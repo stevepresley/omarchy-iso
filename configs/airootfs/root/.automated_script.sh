@@ -112,7 +112,7 @@ chroot_bash() {
 
 if [[ $(tty) == "/dev/tty1" ]]; then
   # Set log file to pull from in trap
-  export LOG_FILE="/var/log/omarchy-install.log"
+  export OMARCHY_INSTALL_LOG_FILE="/var/log/omarchy-install.log"
   export OMARCHY_PATH="/root/omarchy"
   export OMARCHY_INSTALL="/root/omarchy/install"
 
@@ -138,10 +138,10 @@ if [[ $(tty) == "/dev/tty1" ]]; then
 
   gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing Omarchy..."
 
-  touch "$LOG_FILE"
+  touch "$OMARCHY_INSTALL_LOG_FILE"
 
   start_log_output
-  install_base_system 2>&1 | sed -u 's/\x1b\[[0-9;]*[a-zA-Z]//g' >>"$LOG_FILE"
+  install_base_system 2>&1 | sed -u 's/\x1b\[[0-9;]*[a-zA-Z]//g' >>"$OMARCHY_INSTALL_LOG_FILE"
   cleanup
 
   # Get username from the config file after installation
