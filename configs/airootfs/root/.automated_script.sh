@@ -86,10 +86,6 @@ EOF
   mkdir -p /mnt/home/$OMARCHY_USER/.local/share/
   cp -r /root/omarchy /mnt/home/$OMARCHY_USER/.local/share/
 
-  # Copy icons to user's applications directory
-  mkdir -p /mnt/home/$OMARCHY_USER/.local/share/applications/icons
-  cp -r /root/.local/share/applications/icons/* /mnt/home/$OMARCHY_USER/.local/share/applications/icons/
-
   chown -R 1000:1000 /mnt/home/$OMARCHY_USER/.local/
   # Ensure all scripts in bin directories are executable
   find /mnt/home/$OMARCHY_USER/.local/share/omarchy -type f -path "*/bin/*" -exec chmod +x {} \;
