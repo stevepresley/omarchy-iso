@@ -28,6 +28,7 @@ install_arch() {
 }
 
 install_omarchy() {
+  chroot_bash -lc "sudo pacman -S --noconfirm --needed gum" >/dev/null
   chroot_bash -lc "source /home/$OMARCHY_USER/.local/share/omarchy/install.sh || bash"
 }
 
