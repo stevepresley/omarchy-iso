@@ -95,6 +95,11 @@ user_form() {
   # Pick timezone
   if command -v tzupdate >/dev/null; then
     geo_guessed_timezone=$(tzupdate -p 2>/dev/null)
+  else
+    geo_guessed_timezone=""
+  fi
+
+  if [[ -n $geo_guessed_timezone ]]; then
     timezone=$(timedatectl list-timezones | gum choose --height 10 --selected "$geo_guessed_timezone" --header "Timezone") || abort
   else
     timezone=$(timedatectl list-timezones | gum filter --height 10 --header "Timezone") || abort
@@ -361,4 +366,3 @@ if [[ $1 == "dry" ]]; then
 
   rm user_configuration.json user_credentials.json user_full_name.txt user_email_address.txt
 fi
-
