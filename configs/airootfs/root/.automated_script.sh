@@ -34,9 +34,6 @@ run_configurator() {
   else
     NETWORK_NOT_NEEDED=true ./configurator
   fi
-
-  # Get username from installer config for reliable error recovery
-  export OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
 }
 
 install_base_system() {
@@ -122,6 +119,9 @@ if [[ $(tty) == "/dev/tty1" ]]; then
 
   set_tokyo_night_colors
   run_configurator
+
+  # Get username from installer config for reliable error recovery
+  export OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
 
   clear_logo
   gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing Omarchy..."
