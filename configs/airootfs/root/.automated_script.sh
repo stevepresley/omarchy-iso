@@ -29,8 +29,6 @@ set_tokyo_night_colors() {
 }
 
 run_configurator() {
-  set -euo pipefail
-
   # Check if this is an online or offline build
   if [ "${OMARCHY_INSTALL_MODE:-offline}" = "online" ]; then
     ./configurator
@@ -43,8 +41,6 @@ run_configurator() {
 }
 
 install_base_system() {
-  set -euo pipefail
-
   # Initialize and populate the keyring
   pacman-key --init
   pacman-key --populate archlinux
