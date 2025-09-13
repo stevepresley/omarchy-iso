@@ -123,25 +123,20 @@ if [[ $(tty) == "/dev/tty1" ]]; then
     export OMARCHY_INSTALL_MODE="offline"
   fi
 
-  source "$OMARCHY_INSTALL/preflight/set-size-vars.sh"
-  source "$OMARCHY_INSTALL/helpers/logo.sh"
-  source "$OMARCHY_INSTALL/preflight/gum.sh"
-  source "$OMARCHY_INSTALL/helpers/tail-log-output.sh"
-  source "$OMARCHY_INSTALL/helpers/trap-errors.sh"
+  source "$OMARCHY_INSTALL/helpers/all.sh"
 
   set_tokyo_night_colors
-
   run_configurator
 
   clear_logo
-
   gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing Omarchy..."
 
   touch "$OMARCHY_INSTALL_LOG_FILE"
 
   start_log_output
   install_base_system 2>&1 | sed -u 's/\x1b\[[0-9;]*[a-zA-Z]//g' >>"$OMARCHY_INSTALL_LOG_FILE"
-  cleanup
+  stop_log_output
+  show_cursor
 
   # Get username from the config file after installation
   OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
