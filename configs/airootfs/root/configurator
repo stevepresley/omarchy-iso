@@ -3,10 +3,6 @@
 # Rely on Omarchy for styling and error handling
 source "$OMARCHY_INSTALL/helpers/all.sh"
 
-# Install prerequisites
-command -v iwctl >/dev/null || sudo pacman -Sy --noconfirm iw
-command -v tzupdate >/dev/null || sudo pacman -Sy --noconfirm tzupdate
-
 abort() {
   gum style "${1:-Aborted installation}"
   echo
@@ -93,11 +89,8 @@ user_form() {
   done
 
   # Pick timezone
-  if command -v tzupdate >/dev/null; then
-    geo_guessed_timezone=$(tzupdate -p 2>/dev/null)
-  else
-    geo_guessed_timezone=""
-  fi
+  command -v tzupdate >/dev/null || sudo pacman -Sy --noconfirm tzupdate
+  geo_guessed_timezone=$(tzupdate -p 2>/dev/null)
 
   if [[ -n $geo_guessed_timezone ]]; then
     timezone=$(timedatectl list-timezones | gum choose --height 10 --selected "$geo_guessed_timezone" --header "Timezone") || abort
@@ -110,7 +103,6 @@ user_form
 
 while true; do
   # Add manual padding since gum table -p doesn't respect padding
-  echo
   echo -e "Field,Value
 Username,$username
 Password,$(printf "%${#password}s" | tr ' ' '*')
@@ -197,29 +189,10 @@ clear
 echo "$full_name" >user_full_name.txt
 echo "$email_address" >user_email_address.txt
 
-disk_size=$(lsblk -bdno SIZE "$disk")
-mib=$((1024 * 1024))
-gib=$((mib * 1024))
-disk_size_in_mib=$((disk_size / mib * mib)) # Rounds to nearest MiB
-
-gpt_backup_reserve=$((mib))
-boot_partition_start=$((mib))
-boot_partition_size=$((2 * gib))
-
-main_partition_start=$((boot_partition_size + boot_partition_start))
-main_partition_size=$((disk_size_in_mib - main_partition_start - gpt_backup_reserve))
-
 # Escape username and password for safe inclusion
 password_escaped=$(echo -n "$password" | jq -Rsa)
 password_hash_escaped=$(echo -n "$password_hash" | jq -Rsa)
 username_escaped=$(echo -n "$username" | jq -Rsa)
-
-# Detect T2 Mac and set appropriate kernel
-if lspci -nn 2>/dev/null | grep -q "106b:180[12]"; then
-  kernel_choice="linux-t2"
-else
-  kernel_choice="linux"
-fi
 
 cat <<-_EOF_ >user_credentials.json
 {
@@ -235,6 +208,26 @@ cat <<-_EOF_ >user_credentials.json
     ]
 }
 _EOF_
+
+# Setup partition layout
+disk_size=$(lsblk -bdno SIZE "$disk")
+mib=$((1024 * 1024))
+gib=$((mib * 1024))
+disk_size_in_mib=$((disk_size / mib * mib)) # Rounds to nearest MiB
+
+gpt_backup_reserve=$((mib))
+boot_partition_start=$((mib))
+boot_partition_size=$((2 * gib))
+
+main_partition_start=$((boot_partition_size + boot_partition_start))
+main_partition_size=$((disk_size_in_mib - main_partition_start - gpt_backup_reserve))
+
+# Detect T2 Mac and set appropriate kernel
+if lspci -nn 2>/dev/null | grep -q "106b:180[12]"; then
+  kernel_choice="linux-t2"
+else
+  kernel_choice="linux"
+fi
 
 cat <<-_EOF_ >user_configuration.json
 {
