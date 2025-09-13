@@ -2,29 +2,15 @@
 
 set -e
 
-# Note that these are packages installed to the Arch container
-# used to build the ISO.
+# Note that these are packages installed to the Arch container used to build the ISO.
 pacman-key --init
 pacman --noconfirm -Sy archlinux-keyring
-pacman --noconfirm -Sy archiso git python-pip sudo base-devel jq
+pacman --noconfirm -Sy archiso git sudo base-devel jq
 
 build_cache_dir="/var/cache"
 offline_mirror_dir="$build_cache_dir/airootfs/var/cache/omarchy/mirror/offline"
 offline_ruby_dir="$build_cache_dir/airootfs/var/cache/omarchy/ruby"
 
-# We need to fiddle with pip settings
-# in order to install to the correct place
-# as well as ignore some errors to make this less verbose
-export PIP_ROOT="$build_cache_dir/airootfs/"
-export PIP_ROOT_USER_ACTION="ignore"
-export PIP_NO_WARN_SCRIPT_LOCATION=1
-export PIP_BREAK_SYSTEM_PACKAGES=1
-
-# These packages will be installed **into** the ISO, and
-# won't be available to either archinstall or omarchy installer.
-python_packages=(
-  terminaltexteffects
-)
 arch_packages=(
   git
   gum
@@ -35,10 +21,6 @@ arch_packages=(
 )
 
 prepare_offline_mirror() {
-  # Certain packages in omarchy.packages are AUR packages.
-  # These needs to be pre-built and placed in https://pkgs.omarchy.org/$arch
-  echo "Reading and combining packages from all package files..."
-
   # Combine all packages into one array
   # Start with base ISO packages (including our arch_packages already appended)
   all_packages=($(cat "$build_cache_dir/packages.x86_64"))
@@ -120,10 +102,6 @@ fi
 # but they're actually in $build_cache_dir/airootfs/var/cache/omarchy/mirror/offline
 mkdir -p /var/cache/omarchy/mirror
 ln -s "$offline_mirror_dir" "/var/cache/omarchy/mirror/offline"
-
-# Install Python packages for the installer into the ISO
-# file system.
-pip install "${python_packages[@]}"
 
 # Copy the pacman.conf to the ISO's /etc directory so the live environment uses our
 # same config when booted

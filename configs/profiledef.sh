@@ -24,6 +24,5 @@ file_permissions=(
   ["/usr/local/bin/choose-mirror"]="0:0:755"
   ["/root/configurator"]="0:0:755"
   ["/var/cache/omarchy/mirror/offline/"]="0:0:775"
-  ["/usr/bin/tte"]="0:0:755"
   ["/usr/local/bin/omarchy-upload-log"]="0:0:755"
 )
