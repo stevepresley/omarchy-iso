@@ -7,58 +7,12 @@ pacman-key --init
 pacman --noconfirm -Sy archlinux-keyring
 pacman --noconfirm -Sy archiso git sudo base-devel jq
 
+# Define build locations
 build_cache_dir="/var/cache"
 offline_mirror_dir="$build_cache_dir/airootfs/var/cache/omarchy/mirror/offline"
 offline_ruby_dir="$build_cache_dir/airootfs/var/cache/omarchy/ruby"
 
-arch_packages=(
-  git
-  gum
-  jq
-  openssl
-  plymouth
-  tzupdate
-)
-
-prepare_offline_mirror() {
-  # Combine all packages into one array
-  # Start with base ISO packages (including our arch_packages already appended)
-  all_packages=($(cat "$build_cache_dir/packages.x86_64"))
-
-  # Add packages from the omarchy installer's unified package list
-  all_packages+=($(grep -v '^#' "$build_cache_dir/airootfs/root/omarchy/install/omarchy-base.packages" | grep -v '^$'))
-  all_packages+=($(grep -v '^#' "$build_cache_dir/airootfs/root/omarchy/install/omarchy-other.packages" | grep -v '^$'))
-
-  # Add archinstall needed packages
-  all_packages+=($(grep -v '^#' /builder/archinstall.packages | grep -v '^$'))
-
-  if [ ${#all_packages[@]} -gt 0 ]; then
-    mkdir -p /tmp/offlinedb
-
-    # Download all the packages to the offline mirror inside the ISO
-    echo "Downloading all packages (including AUR) to offline mirror: ${all_packages[@]}"
-    pacman --config /configs/pacman-online.conf \
-      --noconfirm -Syw "${all_packages[@]}" \
-      --cachedir $offline_mirror_dir/ \
-      --dbpath /tmp/offlinedb
-
-    repo-add --new "$offline_mirror_dir/offline.db.tar.gz" "$offline_mirror_dir/"*.pkg.tar.zst
-
-    rm "$build_cache_dir/airootfs/etc/pacman.d/hooks/uncomment-mirrors.hook"
-  fi
-}
-
-disable_reflector() {
-  # Avoid using reflector for mirror identification as we are relying on the global CDN
-  rm "$build_cache_dir/airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
-  rm -rf "$build_cache_dir/airootfs/etc/systemd/system/reflector.service.d"
-  rm -rf "$build_cache_dir/airootfs/etc/xdg/reflector"
-}
-
-#######################
 # Build process start
-#######################
-
 mkdir -p $build_cache_dir/
 mkdir -p $offline_mirror_dir/
 mkdir -p $offline_ruby_dir/
@@ -66,7 +20,11 @@ mkdir -p $offline_ruby_dir/
 # We base our ISO on the official arch ISO (releng) config
 cp -r /archiso/configs/releng/* $build_cache_dir/
 rm "$build_cache_dir/airootfs/etc/motd"
-disable_reflector
+
+# Avoid using reflector for mirror identification as we are relying on the global CDN
+rm "$build_cache_dir/airootfs/etc/systemd/system/multi-user.target.wants/reflector.service"
+rm -rf "$build_cache_dir/airootfs/etc/systemd/system/reflector.service.d"
+rm -rf "$build_cache_dir/airootfs/etc/xdg/reflector"
 
 # Bring in our configs
 cp -r /configs/* $build_cache_dir/
@@ -82,19 +40,20 @@ cp "$build_cache_dir/airootfs/root/omarchy/bin/omarchy-upload-log" "$build_cache
 mkdir -p "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy"
 cp -r "$build_cache_dir/airootfs/root/omarchy/default/plymouth/"* "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy/"
 
-# Add our additional packages to packages.x86_64
-printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
+# Build list of all the packages needed for the offline mirror
+all_packages=($(cat "$build_cache_dir/packages.x86_64"))
+all_packages+=($(grep -v '^#' "$build_cache_dir/airootfs/root/omarchy/install/omarchy-base.packages" | grep -v '^$'))
+all_packages+=($(grep -v '^#' "$build_cache_dir/airootfs/root/omarchy/install/omarchy-other.packages" | grep -v '^$'))
 
-prepare_offline_mirror
+# Download all the packages to the offline mirror inside the ISO
+mkdir -p /tmp/offlinedb
+pacman --config /configs/pacman-online.conf --noconfirm -Syw "${all_packages[@]}" --cachedir $offline_mirror_dir/ --dbpath /tmp/offlinedb
+repo-add --new "$offline_mirror_dir/offline.db.tar.gz" "$offline_mirror_dir/"*.pkg.tar.zst
 
 # Download Ruby tarball if not already cached
 ruby_tarball="ruby-3.4.5-rails-8.0.2.1-x86_64.tar.gz"
-if [ ! -f "$offline_ruby_dir/$ruby_tarball" ]; then
-  echo "Downloading Ruby tarball..."
-  curl -fsSL -o "$offline_ruby_dir/$ruby_tarball" \
-    "https://pkgs.omarchy.org/ruby/$ruby_tarball"
-else
-  echo "Ruby tarball already cached, skipping download"
+if [[ ! -f "$offline_ruby_dir/$ruby_tarball" ]]; then
+  curl -fsSL -o "$offline_ruby_dir/$ruby_tarball" "https://pkgs.omarchy.org/ruby/$ruby_tarball"
 fi
 
 # Create a symlink to the offline mirror instead of duplicating it.
