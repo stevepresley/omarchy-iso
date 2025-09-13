@@ -4,7 +4,7 @@ set -euo pipefail
 run_configurator() {
   set_tokyo_night_colors
   ./configurator
-  OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
+  export OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
 }
 
 install_arch() {
