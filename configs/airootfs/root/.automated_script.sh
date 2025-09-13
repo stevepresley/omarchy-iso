@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+use_omarchy_helpers() {
+  export OMARCHY_PATH="/root/omarchy"
+  export OMARCHY_INSTALL="/root/omarchy/install"
+  source /root/omarchy/install/helpers/all.sh
+}
+
 run_configurator() {
   set_tokyo_night_colors
   ./configurator
@@ -118,8 +124,7 @@ chroot_bash() {
 }
 
 if [[ $(tty) == "/dev/tty1" ]]; then
-  source /root/omarchy/install/helpers/all.sh
-
+  use_omarchy_helpers
   run_configurator
   install_arch
   install_omarchy
