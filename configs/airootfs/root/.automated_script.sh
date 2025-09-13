@@ -119,9 +119,6 @@ if [[ $(tty) == "/dev/tty1" ]]; then
   stop_log_output
   show_cursor
 
-  # Get username from the config file after installation
-  OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
-
   # Install gum early so we have it for formatting
   chroot_bash -lc "sudo pacman -S --noconfirm --needed gum" >/dev/null
 
