@@ -100,13 +100,6 @@ if [[ $(tty) == "/dev/tty1" ]]; then
   export OMARCHY_PATH="/root/omarchy"
   export OMARCHY_INSTALL="/root/omarchy/install"
 
-  # Set install mode based on build mode file, default to offline
-  if [ -f /root/omarchy_install_mode.txt ]; then
-    export OMARCHY_INSTALL_MODE="$(cat /root/omarchy_install_mode.txt)"
-  else
-    export OMARCHY_INSTALL_MODE="offline"
-  fi
-
   source "$OMARCHY_INSTALL/helpers/all.sh"
 
   set_tokyo_night_colors
