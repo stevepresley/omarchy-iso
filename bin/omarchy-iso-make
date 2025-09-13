@@ -54,8 +54,7 @@ if [ -d "/var/cache/pacman/pkg" ]; then
   DOCKER_ARGS+=(-v "/var/cache/pacman/pkg:/var/cache/pacman/pkg")
 fi
 
-# Mount the build cache directory where packages are downloaded for the offline repo
-# Only applicable for offline builds and when --no-cache is not specified
+# Mount the build cache directory where packages are downloaded
 if [[ -z "$NO_CACHE" ]]; then
   # using a dated dir on the host to refresh daily if building multiple times
   BUILD_DATE=$(date +%Y-%m-%d)
