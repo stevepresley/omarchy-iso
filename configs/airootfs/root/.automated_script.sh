@@ -119,8 +119,8 @@ chroot_bash() {
     OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
     USER="$OMARCHY_USER" \
     HOME="/home/$OMARCHY_USER" \
-    OMARCHY_REPO="$(<omarchy_installer_repo.txt)" \
-    OMARCHY_REF="$(<omarchy_installer_ref.txt)" \
+    OMARCHY_REPO="$(<omarchy_installer_repo.txt 2>/dev/null)" \
+    OMARCHY_REF="$(<omarchy_installer_ref.txt 2>/dev/null)" \
     /bin/bash "$@"
 }
 
