@@ -29,7 +29,6 @@ set_tokyo_night_colors() {
 }
 
 run_configurator() {
-  # Check if this is an online or offline build
   if [ "${OMARCHY_INSTALL_MODE:-offline}" = "online" ]; then
     ./configurator
   else
