@@ -4,18 +4,9 @@
 set -e
 
 # Parse command line arguments
-BUILD_MODE="offline"
 NO_CACHE=""
 while [[ $# -gt 0 ]]; do
   case $1 in
-  --online)
-    BUILD_MODE="online"
-    shift
-    ;;
-  --offline)
-    BUILD_MODE="offline"
-    shift
-    ;;
   --no-cache)
     NO_CACHE=1
     shift
@@ -56,7 +47,6 @@ DOCKER_ARGS=(
   -e "OMARCHY_INSTALLER_REPO=$OMARCHY_INSTALLER_REPO"
   -e "OMARCHY_INSTALLER_REF=$OMARCHY_INSTALLER_REF"
   -e "OMARCHY_INSTALLER_URL=$OMARCHY_INSTALLER_URL"
-  -e "OMARCHY_BUILD_MODE=$BUILD_MODE"
   -v "$BUILD_RELEASE_PATH/:/out/"
   -v "$BUILD_ROOT/$BUILD_SCRIPT:/$BUILD_SCRIPT:ro"
   -v "$BUILD_ROOT/archiso:/archiso:ro"
@@ -71,7 +61,7 @@ fi
 
 # Mount the build cache directory where packages are downloaded for the offline repo
 # Only applicable for offline builds and when --no-cache is not specified
-if [[ "$BUILD_MODE" == "offline" && -z "$NO_CACHE" ]]; then
+if [[ -z "$NO_CACHE" ]]; then
   # using a dated dir on the host to refresh daily if building multiple times
   BUILD_DATE=$(date +%Y-%m-%d)
   OFFLINE_REPO_BUILD_CACHE_DIR="$HOME/.cache/omarchy/iso_${BUILD_DATE}/airootfs/var/cache/omarchy"

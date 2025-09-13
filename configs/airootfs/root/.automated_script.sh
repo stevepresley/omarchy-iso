@@ -28,14 +28,6 @@ set_tokyo_night_colors() {
   fi
 }
 
-run_configurator() {
-  if [ "${OMARCHY_INSTALL_MODE:-offline}" = "online" ]; then
-    ./configurator
-  else
-    NETWORK_NOT_NEEDED=true ./configurator
-  fi
-}
-
 install_base_system() {
   # Initialize and populate the keyring
   pacman-key --init
@@ -118,13 +110,14 @@ if [[ $(tty) == "/dev/tty1" ]]; then
   source "$OMARCHY_INSTALL/helpers/all.sh"
 
   set_tokyo_night_colors
-  run_configurator
+  NETWORK_NOT_NEEDED=true ./configurator
 
   # Get username from installer config for reliable error recovery
   export OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
 
   clear_logo
   gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing Omarchy..."
+  echo
 
   touch "$OMARCHY_INSTALL_LOG_FILE"
 
