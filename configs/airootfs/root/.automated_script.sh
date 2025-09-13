@@ -16,7 +16,7 @@ run_configurator() {
 
 install_arch() {
   clear_logo
-  gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing Omarchy..."
+  gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing..."
   echo
 
   touch /var/log/omarchy-install.log
