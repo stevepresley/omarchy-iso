@@ -1,6 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+run_configurator() {
+  set_tokyo_night_colors
+  ./configurator
+  OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
+}
+
+install_arch() {
+  clear_logo
+  gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing Omarchy..."
+  echo
+
+  touch /var/log/omarchy-install.log
+
+  start_log_output
+  install_base_system 2>&1 | sed -u 's/\x1b\[[0-9;]*[a-zA-Z]//g' >>/var/log/omarchy-install.log
+  stop_log_output
+  show_cursor
+}
+
+install_omarchy() {
+  chroot_bash -lc "source /home/$OMARCHY_USER/.local/share/omarchy/install.sh || bash"
+}
+
 # Set Tokyo Night color scheme for the terminal
 set_tokyo_night_colors() {
   if [[ $(tty) == "/dev/tty"* ]]; then
@@ -97,22 +120,7 @@ chroot_bash() {
 if [[ $(tty) == "/dev/tty1" ]]; then
   source /root/omarchy/install/helpers/all.sh
 
-  set_tokyo_night_colors
-  ./configurator
-
-  OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
-
-  clear_logo
-  gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing Omarchy..."
-  echo
-
-  touch /var/log/omarchy-install.log
-
-  start_log_output
-  install_base_system 2>&1 | sed -u 's/\x1b\[[0-9;]*[a-zA-Z]//g' >>/var/log/omarchy-install.log
-  stop_log_output
-  show_cursor
-
-  # Run Omarchy installer directly (skip boot.sh since it would try to clone again)
-  chroot_bash -lc "source /home/$OMARCHY_USER/.local/share/omarchy/install.sh || bash"
+  run_configurator
+  install_arch
+  install_omarchy
 fi
