@@ -106,8 +106,6 @@ EOF
   chown -R 1000:1000 /mnt/home/$OMARCHY_USER/.local/
   # Ensure all scripts in bin directories are executable
   find /mnt/home/$OMARCHY_USER/.local/share/omarchy -type f -path "*/bin/*" -exec chmod +x {} \;
-  # Ensure boot.sh is executable
-  chmod +x /mnt/home/$OMARCHY_USER/.local/share/omarchy/boot.sh 2>/dev/null || true
 }
 
 chroot_bash() {
