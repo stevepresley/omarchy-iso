@@ -7,12 +7,10 @@ pacman-key --init
 pacman --noconfirm -Sy archlinux-keyring
 pacman --noconfirm -Sy archiso git sudo base-devel jq
 
-# Define build locations
+# Setup build locations
 build_cache_dir="/var/cache"
 offline_mirror_dir="$build_cache_dir/airootfs/var/cache/omarchy/mirror/offline"
 offline_ruby_dir="$build_cache_dir/airootfs/var/cache/omarchy/ruby"
-
-# Build process start
 mkdir -p $build_cache_dir/
 mkdir -p $offline_mirror_dir/
 mkdir -p $offline_ruby_dir/
@@ -40,10 +38,15 @@ cp "$build_cache_dir/airootfs/root/omarchy/bin/omarchy-upload-log" "$build_cache
 mkdir -p "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy"
 cp -r "$build_cache_dir/airootfs/root/omarchy/default/plymouth/"* "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy/"
 
+# Add our additional packages to packages.x86_64
+arch_packages=(git gum jq openssl plymouth tzupdate)
+printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
+
 # Build list of all the packages needed for the offline mirror
 all_packages=($(cat "$build_cache_dir/packages.x86_64"))
 all_packages+=($(grep -v '^#' "$build_cache_dir/airootfs/root/omarchy/install/omarchy-base.packages" | grep -v '^$'))
 all_packages+=($(grep -v '^#' "$build_cache_dir/airootfs/root/omarchy/install/omarchy-other.packages" | grep -v '^$'))
+all_packages+=($(grep -v '^#' /builder/archinstall.packages | grep -v '^$'))
 
 # Download all the packages to the offline mirror inside the ISO
 mkdir -p /tmp/offlinedb
