@@ -34,7 +34,7 @@ arch_packages=(
   jq
   openssl
   plymouth
-  tzupdate # This is technically an AUR package
+  tzupdate
 )
 
 prepare_offline_mirror() {
