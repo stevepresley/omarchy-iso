@@ -3,6 +3,9 @@
 # Rely on Omarchy for styling and error handling
 source "$OMARCHY_INSTALL/helpers/all.sh"
 
+# Ensure tzupdate is available for guessing timezone
+command -v tzupdate >/dev/null || sudo pacman -Sy --noconfirm tzupdate
+
 abort() {
   gum style "${1:-Aborted installation}"
   echo
@@ -89,7 +92,6 @@ user_form() {
   done
 
   # Pick timezone
-  command -v tzupdate >/dev/null || sudo pacman -Sy --noconfirm tzupdate
   geo_guessed_timezone=$(tzupdate -p 2>/dev/null)
 
   if [[ -n $geo_guessed_timezone ]]; then
