@@ -51,7 +51,7 @@ prepare_offline_mirror() {
   all_packages+=($(grep -v '^#' "$build_cache_dir/airootfs/root/omarchy/install/omarchy-other.packages" | grep -v '^$'))
 
   # Add archinstall needed packages
-  all_packages+=($(grep -v '^#' /builder/packages/archinstall.packages | grep -v '^$'))
+  all_packages+=($(grep -v '^#' /builder/archinstall.packages | grep -v '^$'))
 
   if [ ${#all_packages[@]} -gt 0 ]; then
     mkdir -p /tmp/offlinedb
