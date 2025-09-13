@@ -100,11 +100,6 @@ cp "$build_cache_dir/airootfs/root/omarchy/bin/omarchy-upload-log" "$build_cache
 mkdir -p "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy"
 cp -r "$build_cache_dir/airootfs/root/omarchy/default/plymouth/"* "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy/"
 
-# Download the configurator
-mkdir -p "$build_cache_dir/airootfs/root"
-curl -fsSL -o "$build_cache_dir/airootfs/root/configurator" \
-  "https://raw.githubusercontent.com/$OMARCHY_CONFIGURATOR_REPO/$OMARCHY_CONFIGURATOR_REF/configurator"
-
 # Add our additional packages to packages.x86_64
 printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
 

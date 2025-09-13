@@ -103,7 +103,7 @@ if [[ $(tty) == "/dev/tty1" ]]; then
   source "$OMARCHY_INSTALL/helpers/all.sh"
 
   set_tokyo_night_colors
-  NETWORK_NOT_NEEDED=true ./configurator
+  ./configurator
 
   # Get username from installer config for reliable error recovery
   export OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
