@@ -95,32 +95,23 @@ chroot_bash() {
 }
 
 if [[ $(tty) == "/dev/tty1" ]]; then
-  # Set log file to pull from in trap
-  export OMARCHY_INSTALL_LOG_FILE="/var/log/omarchy-install.log"
-  export OMARCHY_PATH="/root/omarchy"
-  export OMARCHY_INSTALL="/root/omarchy/install"
-
-  source "$OMARCHY_INSTALL/helpers/all.sh"
+  source /root/omarchy/install/helpers/all.sh
 
   set_tokyo_night_colors
   ./configurator
 
-  # Get username from installer config for reliable error recovery
-  export OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
+  OMARCHY_USER="$(jq -r '.users[0].username' user_credentials.json)"
 
   clear_logo
   gum style --foreground 3 --padding "1 0 0 $PADDING_LEFT" "Installing Omarchy..."
   echo
 
-  touch "$OMARCHY_INSTALL_LOG_FILE"
+  touch /var/log/omarchy-install.log
 
   start_log_output
-  install_base_system 2>&1 | sed -u 's/\x1b\[[0-9;]*[a-zA-Z]//g' >>"$OMARCHY_INSTALL_LOG_FILE"
+  install_base_system 2>&1 | sed -u 's/\x1b\[[0-9;]*[a-zA-Z]//g' >>/var/log/omarchy-install.log
   stop_log_output
   show_cursor
-
-  # Install gum early so we have it for formatting
-  chroot_bash -lc "sudo pacman -S --noconfirm --needed gum" >/dev/null
 
   # Run Omarchy installer directly (skip boot.sh since it would try to clone again)
   chroot_bash -lc "source /home/$OMARCHY_USER/.local/share/omarchy/install.sh || bash"
