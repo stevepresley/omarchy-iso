@@ -24,7 +24,6 @@ install_arch() {
   start_log_output
   install_base_system 2>&1 | sed -u 's/\x1b\[[0-9;]*[a-zA-Z]//g' >>/var/log/omarchy-install.log
   stop_log_output
-  show_cursor
 }
 
 install_omarchy() {
