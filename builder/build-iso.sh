@@ -39,7 +39,7 @@ mkdir -p "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy"
 cp -r "$build_cache_dir/airootfs/root/omarchy/default/plymouth/"* "$build_cache_dir/airootfs/usr/share/plymouth/themes/omarchy/"
 
 # Add our additional packages to packages.x86_64
-arch_packages=(git gum jq openssl plymouth tzupdate)
+arch_packages=(linux-t2 git gum jq openssl plymouth tzupdate)
 printf '%s\n' "${arch_packages[@]}" >>"$build_cache_dir/packages.x86_64"
 
 # Build list of all the packages needed for the offline mirror
