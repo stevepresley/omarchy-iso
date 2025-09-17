@@ -10,10 +10,8 @@ pacman --noconfirm -Sy archiso git sudo base-devel jq
 # Setup build locations
 build_cache_dir="/var/cache"
 offline_mirror_dir="$build_cache_dir/airootfs/var/cache/omarchy/mirror/offline"
-offline_ruby_dir="$build_cache_dir/airootfs/var/cache/omarchy/ruby"
 mkdir -p $build_cache_dir/
 mkdir -p $offline_mirror_dir/
-mkdir -p $offline_ruby_dir/
 
 # We base our ISO on the official arch ISO (releng) config
 cp -r /archiso/configs/releng/* $build_cache_dir/
@@ -52,12 +50,6 @@ all_packages+=($(grep -v '^#' /builder/archinstall.packages | grep -v '^$'))
 mkdir -p /tmp/offlinedb
 pacman --config /configs/pacman-online.conf --noconfirm -Syw "${all_packages[@]}" --cachedir $offline_mirror_dir/ --dbpath /tmp/offlinedb
 repo-add --new "$offline_mirror_dir/offline.db.tar.gz" "$offline_mirror_dir/"*.pkg.tar.zst
-
-# Download Ruby tarball if not already cached
-ruby_tarball="ruby-3.4.5-rails-8.0.2.1-x86_64.tar.gz"
-if [[ ! -f "$offline_ruby_dir/$ruby_tarball" ]]; then
-  curl -fsSL -o "$offline_ruby_dir/$ruby_tarball" "https://pkgs.omarchy.org/ruby/$ruby_tarball"
-fi
 
 # Create a symlink to the offline mirror instead of duplicating it.
 # mkarchiso needs packages at /var/cache/omarchy/mirror/offline in the container,
