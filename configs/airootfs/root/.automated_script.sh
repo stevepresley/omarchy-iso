@@ -86,10 +86,6 @@ install_base_system() {
   mkdir -p /mnt/var/cache/omarchy/mirror/offline
   mount --bind /var/cache/omarchy/mirror/offline /mnt/var/cache/omarchy/mirror/offline
 
-  # Mount the ruby directory so it's accessible in the chroot
-  mkdir -p /mnt/var/cache/omarchy/ruby
-  mount --bind /var/cache/omarchy/ruby /mnt/var/cache/omarchy/ruby
-
   # No need to ask for sudo during the installation (omarchy itself responsible for removing after install)
   mkdir -p /mnt/etc/sudoers.d
   cat >/mnt/etc/sudoers.d/99-omarchy-installer <<EOF
