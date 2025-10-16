@@ -104,6 +104,11 @@ EOF
   mkdir -p /mnt/home/$OMARCHY_USER/.local/share/
   cp -r /root/omarchy /mnt/home/$OMARCHY_USER/.local/share/
 
+  # Copy the advanced state file for omarchy installer to read
+  if [[ -f /root/omarchy_advanced_state.json ]]; then
+    cp /root/omarchy_advanced_state.json /mnt/home/$OMARCHY_USER/.local/share/omarchy_advanced_state.json
+  fi
+
   chown -R 1000:1000 /mnt/home/$OMARCHY_USER/.local/
 
   # Ensure all necessary scripts are executable
@@ -118,6 +123,7 @@ chroot_bash() {
     env OMARCHY_CHROOT_INSTALL=1 \
     OMARCHY_USER_NAME="$(<user_full_name.txt)" \
     OMARCHY_USER_EMAIL="$(<user_email_address.txt)" \
+    OMARCHY_ADVANCED_STATE="/home/$OMARCHY_USER/.local/share/omarchy_advanced_state.json" \
     USER="$OMARCHY_USER" \
     HOME="/home/$OMARCHY_USER" \
     /bin/bash "$@"
