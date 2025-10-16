@@ -121,38 +121,6 @@ user_form() {
 
 user_form
 
-while true; do
-  # Add manual padding since gum table -p doesn't respect padding
-  summary_table="Field,Value
-Username,$username
-Password,$(printf "%${#password}s" | tr ' ' '*')
-Full name,${full_name:-[Skipped]}
-Email address,${email_address:-[Skipped]}
-Hostname,$hostname
-Timezone,$timezone
-Keyboard,$keyboard"
-
-  # Append advanced mode settings if in Advanced mode
-  if [[ "$INSTALLATION_MODE" == "Advanced" ]]; then
-    summary_table="$summary_table
-Profile,$install_profile
-LUKS Encryption,$([[ "$enable_luks" == "true" ]] && echo "Enabled" || echo "Disabled")
-SSH Server,$([[ "$enable_ssh" == "true" ]] && echo "Enabled" || echo "Disabled")
-VNC Access (wayvnc),$([[ "$enable_wayvnc" == "true" ]] && echo "Enabled" || echo "Disabled")
-Autologin,$([[ "$enable_autologin" == "true" ]] && echo "Enabled" || echo "Disabled")"
-  fi
-
-  echo -e "$summary_table" | gum table -s "," -p | sed "s/^/${PADDING_LEFT_SPACES}/"
-
-  echo
-  if gum confirm --negative "No, change it" "Does this look right?"; then
-    break
-  else
-    keyboard_form
-    user_form
-  fi
-done
-
 # STEP 3: DISK
 
 get_disk_info() {
@@ -267,6 +235,91 @@ if [[ "$INSTALLATION_MODE" == "Advanced" ]]; then
     enable_autologin=$([[ "$autologin_choice" == "Yes" ]] && echo "true" || echo "false")
   fi
 fi
+
+# STEP 5: SUMMARY AND CONFIRMATION
+
+while true; do
+  # Add manual padding since gum table -p doesn't respect padding
+  summary_table="Field,Value
+Username,$username
+Password,$(printf "%${#password}s" | tr ' ' '*')
+Full name,${full_name:-[Skipped]}
+Email address,${email_address:-[Skipped]}
+Hostname,$hostname
+Timezone,$timezone
+Keyboard,$keyboard
+Disk,$disk"
+
+  # Append advanced mode settings if in Advanced mode
+  if [[ "$INSTALLATION_MODE" == "Advanced" ]]; then
+    summary_table="$summary_table
+Profile,$install_profile
+LUKS Encryption,$([[ "$enable_luks" == "true" ]] && echo "Enabled" || echo "Disabled")
+SSH Server,$([[ "$enable_ssh" == "true" ]] && echo "Enabled" || echo "Disabled")
+VNC Access (wayvnc),$([[ "$enable_wayvnc" == "true" ]] && echo "Enabled" || echo "Disabled")
+Autologin,$([[ "$enable_autologin" == "true" ]] && echo "Enabled" || echo "Disabled")"
+  fi
+
+  echo -e "$summary_table" | gum table -s "," -p | sed "s/^/${PADDING_LEFT_SPACES}/"
+
+  echo
+  if gum confirm --negative "No, change it" "Does this look right?"; then
+    break
+  else
+    # User wants to change settings - restart the entire flow
+    keyboard_form
+    user_form
+    disk_form
+
+    # Re-run advanced prompts if in Advanced mode
+    if [[ "$INSTALLATION_MODE" == "Advanced" ]]; then
+      step "Let's reconfigure advanced installation options..."
+
+      # Profile selection
+      install_profile=$(gum choose --header "Select installation profile" "Workstation" "VM") || abort
+
+      # LUKS encryption prompt
+      if [[ "$install_profile" == "Workstation" ]]; then
+        luks_default="Yes"
+      else
+        luks_default="No"
+      fi
+      luks_choice=$(gum choose --header "Enable disk encryption (LUKS)?" --selected "$luks_default" "Yes" "No") || abort
+      enable_luks=$([[ "$luks_choice" == "Yes" ]] && echo "true" || echo "false")
+
+      # SSH server prompt
+      if [[ "$install_profile" == "Workstation" ]]; then
+        ssh_default="No"
+      else
+        ssh_default="Yes"
+      fi
+      ssh_choice=$(gum choose --header "Enable SSH server?" --selected "$ssh_default" "Yes" "No") || abort
+      enable_ssh=$([[ "$ssh_choice" == "Yes" ]] && echo "true" || echo "false")
+
+      # wayvnc prompt
+      if [[ "$install_profile" == "Workstation" ]]; then
+        wayvnc_default="No"
+      else
+        wayvnc_default="Yes"
+      fi
+      wayvnc_choice=$(gum choose --header "Enable wayvnc (VNC remote access)?" --selected "$wayvnc_default" "Yes" "No") || abort
+      enable_wayvnc=$([[ "$wayvnc_choice" == "Yes" ]] && echo "true" || echo "false")
+
+      # Autologin prompt (conditional on LUKS)
+      if [[ "$enable_luks" == "true" ]]; then
+        enable_autologin="true"
+      else
+        if [[ "$install_profile" == "Workstation" ]]; then
+          autologin_default="No"
+        else
+          autologin_default="Yes"
+        fi
+        autologin_choice=$(gum choose --header "Enable autologin (no password at boot)?" --selected "$autologin_default" "Yes" "No") || abort
+        enable_autologin=$([[ "$autologin_choice" == "Yes" ]] && echo "true" || echo "false")
+      fi
+    fi
+  fi
+done
 
 clear
 
