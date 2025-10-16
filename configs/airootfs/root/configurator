@@ -205,14 +205,12 @@ done
 # STEP 4: ADVANCED MODE OPTIONS (only if Advanced mode selected)
 
 if [[ "$INSTALLATION_MODE" == "Advanced" ]]; then
-  # Advanced mode prompts will be added here in subsequent commits
-  # This section will include:
-  # - Profile selection (Workstation/VM)
-  # - LUKS encryption prompt
-  # - SSH enable/disable prompt
-  # - wayvnc enable/disable prompt
-  # - Autologin prompt (conditional on LUKS)
-  :  # placeholder for now
+  step "Let's configure advanced installation options..."
+
+  # Profile selection
+  install_profile=$(gum choose --header "Select installation profile" "Workstation" "VM") || abort
+
+  # More prompts will be added in subsequent commits
 fi
 
 clear
