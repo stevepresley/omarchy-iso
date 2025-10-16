@@ -220,6 +220,16 @@ if [[ "$INSTALLATION_MODE" == "Advanced" ]]; then
   luks_choice=$(gum choose --header "Enable disk encryption (LUKS)?" --selected "$luks_default" "Yes" "No") || abort
   enable_luks=$([[ "$luks_choice" == "Yes" ]] && echo "true" || echo "false")
 
+  # SSH server prompt with profile-based defaults
+  if [[ "$install_profile" == "Workstation" ]]; then
+    ssh_default="No"
+  else
+    ssh_default="Yes"
+  fi
+
+  ssh_choice=$(gum choose --header "Enable SSH server?" --selected "$ssh_default" "Yes" "No") || abort
+  enable_ssh=$([[ "$ssh_choice" == "Yes" ]] && echo "true" || echo "false")
+
   # More prompts will be added in subsequent commits
 fi
 
