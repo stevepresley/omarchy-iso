@@ -27,6 +27,14 @@ notice() {
   echo
 }
 
+# STEP 0: INSTALLATION MODE
+
+step "Welcome to Omarchy Installation"
+
+INSTALLATION_MODE=$(gum choose --header "Select installation mode" "Standard" "Advanced") || abort
+
+notice "Continuing with $INSTALLATION_MODE mode..." 1
+
 # STEP 1: KEYBOARD LAYOUT
 
 keyboard_form() {
