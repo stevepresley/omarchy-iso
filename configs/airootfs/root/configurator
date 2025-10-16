@@ -240,7 +240,21 @@ if [[ "$INSTALLATION_MODE" == "Advanced" ]]; then
   wayvnc_choice=$(gum choose --header "Enable wayvnc (VNC remote access)?" --selected "$wayvnc_default" "Yes" "No") || abort
   enable_wayvnc=$([[ "$wayvnc_choice" == "Yes" ]] && echo "true" || echo "false")
 
-  # More prompts will be added in subsequent commits
+  # Autologin prompt (conditional on LUKS being disabled)
+  if [[ "$enable_luks" == "true" ]]; then
+    # With LUKS enabled, autologin is always enabled (security via encryption)
+    enable_autologin="true"
+  else
+    # Without LUKS, ask user about autologin
+    if [[ "$install_profile" == "Workstation" ]]; then
+      autologin_default="No"  # Workstation without LUKS should prompt for password
+    else
+      autologin_default="Yes"  # VM without LUKS should autologin for headless access
+    fi
+
+    autologin_choice=$(gum choose --header "Enable autologin (no password at boot)?" --selected "$autologin_default" "Yes" "No") || abort
+    enable_autologin=$([[ "$autologin_choice" == "Yes" ]] && echo "true" || echo "false")
+  fi
 fi
 
 clear
