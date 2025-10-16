@@ -432,6 +432,18 @@ else
   sed -i 's|]_DISK_ENCRYPTION_PLACEHOLDER_|]|' user_configuration.json
 fi
 
+# Generate advanced state file for omarchy installer
+cat <<-_EOF_ >omarchy_advanced_state.json
+{
+    "installation_mode": "$INSTALLATION_MODE",
+    "install_profile": "$install_profile",
+    "enable_luks": "$enable_luks",
+    "enable_ssh": "$enable_ssh",
+    "enable_wayvnc": "$enable_wayvnc",
+    "enable_autologin": "$enable_autologin"
+}
+_EOF_
+
 if [[ $1 == "dry" ]]; then
   echo -e "User Configuration:"
   cat user_configuration.json
@@ -445,5 +457,8 @@ if [[ $1 == "dry" ]]; then
   echo -e "\nUser Email Address:"
   cat user_email_address.txt
 
-  rm user_configuration.json user_credentials.json user_full_name.txt user_email_address.txt
+  echo -e "\n\nOmarchy Advanced State:"
+  cat omarchy_advanced_state.json
+
+  rm user_configuration.json user_credentials.json user_full_name.txt user_email_address.txt omarchy_advanced_state.json
 fi
