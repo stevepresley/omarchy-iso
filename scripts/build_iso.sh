@@ -40,6 +40,17 @@ LATEST_ISO=$(ls -t release/*.iso | head -n1)
 if [[ -f "$LATEST_ISO" ]]; then
   ISO_BASENAME="${LATEST_ISO%.iso}"
   FINAL_LOG_FILE="${ISO_BASENAME}_BUILD_LOG.txt"
+
+  # Append build summary to log file before renaming
+  {
+    echo ""
+    echo "========================================="
+    echo "Build complete! (took ${MINUTES}m ${SECONDS}s)"
+    echo "ISO: $LATEST_ISO"
+    echo "Build log: $FINAL_LOG_FILE"
+    echo "========================================="
+  } >> "$TEMP_LOG_FILE"
+
   mv "$TEMP_LOG_FILE" "$FINAL_LOG_FILE"
 
   echo ""
