@@ -1,2 +1,5 @@
 release/**
 vm-saves/**
+
+# Claude Code local configuration (not checked in)
+CLAUDE.local.md
