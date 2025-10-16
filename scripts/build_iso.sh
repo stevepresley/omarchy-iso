@@ -27,7 +27,8 @@ export OMARCHY_INSTALLER_REF="feature/omarchy-advanced"
 START_TIME=$(date +%s)
 
 # Run the build with logging (tee shows output AND logs to file)
-./bin/omarchy-iso-make 2>&1 | tee "$TEMP_LOG_FILE"
+# --no-boot-offer skips the interactive "Boot ISO?" prompt
+./bin/omarchy-iso-make --no-boot-offer 2>&1 | tee "$TEMP_LOG_FILE"
 
 # Track end time and calculate duration
 END_TIME=$(date +%s)
