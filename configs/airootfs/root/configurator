@@ -123,15 +123,26 @@ user_form
 
 while true; do
   # Add manual padding since gum table -p doesn't respect padding
-  echo -e "Field,Value
+  summary_table="Field,Value
 Username,$username
 Password,$(printf "%${#password}s" | tr ' ' '*')
 Full name,${full_name:-[Skipped]}
 Email address,${email_address:-[Skipped]}
 Hostname,$hostname
 Timezone,$timezone
-Keyboard,$keyboard" |
-    gum table -s "," -p | sed "s/^/${PADDING_LEFT_SPACES}/"
+Keyboard,$keyboard"
+
+  # Append advanced mode settings if in Advanced mode
+  if [[ "$INSTALLATION_MODE" == "Advanced" ]]; then
+    summary_table="$summary_table
+Profile,$install_profile
+LUKS Encryption,$([[ "$enable_luks" == "true" ]] && echo "Enabled" || echo "Disabled")
+SSH Server,$([[ "$enable_ssh" == "true" ]] && echo "Enabled" || echo "Disabled")
+VNC Access (wayvnc),$([[ "$enable_wayvnc" == "true" ]] && echo "Enabled" || echo "Disabled")
+Autologin,$([[ "$enable_autologin" == "true" ]] && echo "Enabled" || echo "Disabled")"
+  fi
+
+  echo -e "$summary_table" | gum table -s "," -p | sed "s/^/${PADDING_LEFT_SPACES}/"
 
   echo
   if gum confirm --negative "No, change it" "Does this look right?"; then
