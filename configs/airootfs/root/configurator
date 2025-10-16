@@ -384,14 +384,7 @@ cat <<-_EOF_ >user_configuration.json
                 ],
                 "wipe": true
             }
-        ],
-        "disk_encryption": {
-            "encryption_type": "luks",
-            "lvm_volumes": [],
-            "iter_time": 2000,
-            "partitions": [ "8c2c2b92-1070-455d-b76a-56263bab24aa" ],
-            "encryption_password": $password_escaped
-        }
+        ]_DISK_ENCRYPTION_PLACEHOLDER_
     },
     "hostname": "$hostname",
     "kernels": [ "$kernel_choice" ],
@@ -429,6 +422,15 @@ cat <<-_EOF_ >user_configuration.json
     "version": "3.0.9"
 }
 _EOF_
+
+# Conditionally include LUKS encryption in JSON based on enable_luks setting
+if [[ "$enable_luks" == "true" ]]; then
+  # Include disk encryption configuration
+  sed -i 's|]_DISK_ENCRYPTION_PLACEHOLDER_|],\n        "disk_encryption": {\n            "encryption_type": "luks",\n            "lvm_volumes": [],\n            "iter_time": 2000,\n            "partitions": [ "8c2c2b92-1070-455d-b76a-56263bab24aa" ],\n            "encryption_password": '"$password_escaped"'\n        }|' user_configuration.json
+else
+  # Exclude disk encryption configuration
+  sed -i 's|]_DISK_ENCRYPTION_PLACEHOLDER_|]|' user_configuration.json
+fi
 
 if [[ $1 == "dry" ]]; then
   echo -e "User Configuration:"
