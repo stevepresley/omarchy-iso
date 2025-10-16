@@ -33,6 +33,16 @@ step "Welcome to Omarchy Installation"
 
 INSTALLATION_MODE=$(gum choose --header "Select installation mode" "Standard" "Advanced") || abort
 
+# Set defaults based on installation mode
+if [[ "$INSTALLATION_MODE" == "Standard" ]]; then
+  # Standard mode: use existing defaults
+  install_profile="Workstation"
+  enable_luks="true"
+  enable_ssh="false"
+  enable_wayvnc="false"
+  enable_autologin="true"
+fi
+
 notice "Continuing with $INSTALLATION_MODE mode..." 1
 
 # STEP 1: KEYBOARD LAYOUT
