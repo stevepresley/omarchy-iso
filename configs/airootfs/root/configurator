@@ -210,6 +210,16 @@ if [[ "$INSTALLATION_MODE" == "Advanced" ]]; then
   # Profile selection
   install_profile=$(gum choose --header "Select installation profile" "Workstation" "VM") || abort
 
+  # LUKS encryption prompt with profile-based defaults
+  if [[ "$install_profile" == "Workstation" ]]; then
+    luks_default="Yes"
+  else
+    luks_default="No"
+  fi
+
+  luks_choice=$(gum choose --header "Enable disk encryption (LUKS)?" --selected "$luks_default" "Yes" "No") || abort
+  enable_luks=$([[ "$luks_choice" == "Yes" ]] && echo "true" || echo "false")
+
   # More prompts will be added in subsequent commits
 fi
 
