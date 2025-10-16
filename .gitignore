@@ -1,6 +1,5 @@
 release/**
 vm-saves/**
-scripts/**
 output/**
 
 # Claude Code local configuration (not checked in)
