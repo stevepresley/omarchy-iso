@@ -22,6 +22,7 @@ echo ""
 # Clean up previous build artifacts to avoid corruption
 echo "Cleaning previous build cache..."
 sudo rm -rf work/
+rm -rf ~/.cache/omarchy/
 echo ""
 
 # Set environment variables for the build
