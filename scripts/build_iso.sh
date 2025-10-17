@@ -19,6 +19,11 @@ echo "  Installer Repo: stevepresley/omarchy"
 echo "  Installer Branch: feature/omarchy-advanced"
 echo ""
 
+# Clean up previous build artifacts to avoid corruption
+echo "Cleaning previous build cache..."
+sudo rm -rf work/
+echo ""
+
 # Set environment variables for the build
 export OMARCHY_INSTALLER_REPO="stevepresley/omarchy"
 export OMARCHY_INSTALLER_REF="feature/omarchy-advanced"
