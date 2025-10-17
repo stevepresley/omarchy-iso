@@ -100,6 +100,27 @@ $OMARCHY_USER ALL=(ALL:ALL) NOPASSWD: ALL
 EOF
   chmod 440 /mnt/etc/sudoers.d/99-omarchy-installer
 
+  # Create systemd service to remove installer sudoers file on first boot
+  mkdir -p /mnt/etc/systemd/system
+  cat >/mnt/etc/systemd/system/omarchy-installer-cleanup.service <<'EOF'
+[Unit]
+Description=Remove Omarchy installer sudoers file
+After=multi-user.target
+ConditionPathExists=/etc/sudoers.d/99-omarchy-installer
+
+[Service]
+Type=oneshot
+ExecStart=/bin/rm -f /etc/sudoers.d/99-omarchy-installer
+ExecStartPost=/bin/systemctl disable omarchy-installer-cleanup.service
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  # Enable the cleanup service
+  arch-chroot /mnt systemctl enable omarchy-installer-cleanup.service
+
   # Copy the local omarchy repo to the user's home directory
   mkdir -p /mnt/home/$OMARCHY_USER/.local/share/
   cp -r /root/omarchy /mnt/home/$OMARCHY_USER/.local/share/
