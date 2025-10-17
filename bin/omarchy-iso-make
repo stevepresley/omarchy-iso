@@ -67,9 +67,10 @@ fi
 # Run the builder with assembled args
 docker run "${DOCKER_ARGS[@]}" archlinux/archlinux:latest /$BUILD_SCRIPT
 
-# Move as install ref
+# Move as install ref (replace slashes with dashes for valid filename)
 latest_iso=$(\ls -t "$BUILD_RELEASE_PATH"/*.iso | head -n1)
-iso_ref="${latest_iso%.*}-$OMARCHY_INSTALLER_REF.iso"
+safe_ref="${OMARCHY_INSTALLER_REF//\//-}"  # Replace / with -
+iso_ref="${latest_iso%.*}-$safe_ref.iso"
 mv -f "$latest_iso" "$iso_ref"
 
 # Offer to boot the new build
