@@ -29,12 +29,29 @@ START_TIME=$(date +%s)
 # Run the build with logging (tee shows output AND logs to file)
 # --no-boot-offer skips the interactive "Boot ISO?" prompt
 ./bin/omarchy-iso-make --no-boot-offer 2>&1 | tee "$TEMP_LOG_FILE"
+BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
 # Track end time and calculate duration
 END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
 MINUTES=$((DURATION / 60))
 SECONDS=$((DURATION % 60))
+
+# Check if build failed
+if [[ $BUILD_EXIT_CODE -ne 0 ]]; then
+  {
+    echo ""
+    echo "========================================="
+    echo "❌ Build FAILED! (took ${MINUTES}m ${SECONDS}s)"
+    echo "Build log: $TEMP_LOG_FILE"
+    echo "========================================="
+  } >> "$TEMP_LOG_FILE"
+
+  echo ""
+  echo "❌ Build FAILED! (took ${MINUTES}m ${SECONDS}s)"
+  echo "Build log: $TEMP_LOG_FILE"
+  exit 1
+fi
 
 # Find the ISO that was just created and rename log to match
 LATEST_ISO=$(ls -t release/*.iso | head -n1)
