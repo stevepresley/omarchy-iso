@@ -37,7 +37,7 @@ if [ -f "$BACKUP_FILE" ]; then
 	echo "  "
 	echo "Copying to Dropbox for cloud backup..."
 	# Copy backup to Dropbox folder if it exists
-	DROPBOX_DIR="/Volumes/Storage/Dead Crow Customs Dropbox/Steve Presley/Projects/__Backups/$PROJECT_NAME"
+	DROPBOX_DIR="/Users/spresley/Library/CloudStorage/GoogleDrive-steve@deadcrowcustoms.com/Shared drives/Home/Projects/__Backups/$PROJECT_NAME"	
 	mkdir -p "$DROPBOX_DIR"
 	if [ -d "$DROPBOX_DIR" ]; then
 		cp "$BACKUP_FILE" "$DROPBOX_DIR/"

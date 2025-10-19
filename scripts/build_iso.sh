@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
+cd ..
+cd omarchy-advanced
+git pull origin feature/omarchy-advanced
+cd ..
+cd omarchy-advanced-iso
+git pull origin feature/advanced-mode
+
 # Build Omarchy ISO with Advanced Mode features
 # This script builds the ISO from the feature/advanced-mode branch
 # and uses the omarchy installer from the feature/omarchy-advanced branch
