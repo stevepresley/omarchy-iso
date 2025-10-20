@@ -15,8 +15,9 @@ git pull origin feature/advanced-mode
 # Create release directory if it doesn't exist
 mkdir -p release
 
-# Generate temporary log file (we'll rename it to match the ISO later)
-TEMP_LOG_FILE="release/build_log_temp_$$.txt"
+# Generate log file name with timestamp upfront
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+LOG_FILE="release/build-${TIMESTAMP}.log"
 
 echo "Building Omarchy ISO with Advanced Mode features..."
 echo ""
@@ -41,7 +42,7 @@ START_TIME=$(date +%s)
 
 # Run the build with logging (tee shows output AND logs to file)
 # --no-boot-offer skips the interactive "Boot ISO?" prompt
-./bin/omarchy-iso-make --no-boot-offer 2>&1 | tee "$TEMP_LOG_FILE"
+./bin/omarchy-iso-make --no-boot-offer 2>&1 | tee "$LOG_FILE"
 BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
 # Track end time and calculate duration
@@ -56,40 +57,25 @@ if [[ $BUILD_EXIT_CODE -ne 0 ]]; then
     echo ""
     echo "========================================="
     echo "❌ Build FAILED! (took ${MINUTES}m ${SECONDS}s)"
-    echo "Build log: $TEMP_LOG_FILE"
+    echo "Build log: $LOG_FILE"
     echo "========================================="
-  } >> "$TEMP_LOG_FILE"
+  } >> "$LOG_FILE"
 
   echo ""
   echo "❌ Build FAILED! (took ${MINUTES}m ${SECONDS}s)"
-  echo "Build log: $TEMP_LOG_FILE"
+  echo "Build log: $LOG_FILE"
   exit 1
 fi
 
-# Find the ISO that was just created and rename log to match
-LATEST_ISO=$(ls -t release/*.iso | head -n1)
-if [[ -f "$LATEST_ISO" ]]; then
-  ISO_BASENAME="${LATEST_ISO%.iso}"
-  FINAL_LOG_FILE="${ISO_BASENAME}_BUILD_LOG.txt"
-
-  # Append build summary to log file before renaming
-  {
-    echo ""
-    echo "========================================="
-    echo "Build complete! (took ${MINUTES}m ${SECONDS}s)"
-    echo "ISO: $LATEST_ISO"
-    echo "Build log: $FINAL_LOG_FILE"
-    echo "========================================="
-  } >> "$TEMP_LOG_FILE"
-
-  mv "$TEMP_LOG_FILE" "$FINAL_LOG_FILE"
-
+# Build succeeded - append success message and optionally rename to match ISO
+{
   echo ""
-  echo "Build complete! (took ${MINUTES}m ${SECONDS}s)"
-  echo "ISO: $LATEST_ISO"
-  echo "Build log: $FINAL_LOG_FILE"
-else
-  echo ""
-  echo "Build completed but ISO not found in expected location"
-  echo "Build log: $TEMP_LOG_FILE"
-fi
+  echo "========================================="
+  echo "✅ Build SUCCESS! (took ${MINUTES}m ${SECONDS}s)"
+  echo "Build log: $LOG_FILE"
+  echo "========================================="
+} >> "$LOG_FILE"
+
+echo ""
+echo "✅ Build SUCCESS! (took ${MINUTES}m ${SECONDS}s)"
+echo "Build log: $LOG_FILE"
