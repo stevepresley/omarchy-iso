@@ -32,7 +32,7 @@ notice() {
 step "Welcome to Omarchy Advanced Installation"
 
 # Show profile selection with detailed defaults
-gum style --border normal --margin "1" --padding "1 2" "Workstation - Disk encryption (requires boot password), no SSH, no VNC, autologin
+gum style --border normal --margin "1 0 1 $PADDING_LEFT" --padding "1 2" "Workstation - Disk encryption (requires boot password), no SSH, no VNC, autologin
 VM - No disk encryption, SSH, VNC, no autologin
 
 All options can be changed, these are just the defaults to save you time!"
