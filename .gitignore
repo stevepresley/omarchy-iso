@@ -4,3 +4,6 @@ output/**
 
 # Claude Code local configuration (not checked in)
 CLAUDE.local.md
+
+# macOS
+.DS_Store
