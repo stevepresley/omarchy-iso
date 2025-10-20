@@ -15,9 +15,12 @@ git pull origin feature/advanced-mode
 # Create release directory if it doesn't exist
 mkdir -p release
 
-# Generate log file name with timestamp upfront
+# Generate log file name matching existing convention
+# Pattern: omarchy-{timestamp}-{arch}-{installer-branch}_BUILD_LOG.txt
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-LOG_FILE="release/build-${TIMESTAMP}.log"
+ARCH="x86_64"
+INSTALLER_BRANCH="feature/omarchy-advanced"
+LOG_FILE="release/omarchy-${TIMESTAMP}-${ARCH}-${INSTALLER_BRANCH//\//-}_BUILD_LOG.txt"
 
 echo "Building Omarchy ISO with Advanced Mode features..."
 echo ""
