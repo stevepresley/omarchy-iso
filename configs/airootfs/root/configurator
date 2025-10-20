@@ -214,6 +214,19 @@ step "Let's configure advanced installation options..."
   wayvnc_choice=$(gum choose --header "Enable wayvnc (VNC remote access)?" --selected "$wayvnc_default" "Yes" "No") || abort
   enable_wayvnc=$([[ "$wayvnc_choice" == "Yes" ]] && echo "true" || echo "false")
 
+  # Keybinding remap prompt with profile-based defaults
+  if [[ "$install_profile" == "Workstation" ]]; then
+    remap_default="No"
+  else
+    remap_default="Yes"
+  fi
+
+  remap_choice=$(gum choose \
+    --header "Remap keybindings for VM-friendly modifiers? (Map Super bindings to CTRL+ALT)" \
+    --selected "$remap_default" \
+    "Yes" "No") || abort
+  remap_keybindings=$([[ "$remap_choice" == "Yes" ]] && echo "true" || echo "false")
+
   # NOTE: Autologin has been removed in favor of greetd display manager
   # greetd provides a proper login screen with VNC remote access support
   # Users always see a login prompt (more secure, more standard)
@@ -234,7 +247,8 @@ Disk,$disk
 Profile,$install_profile
 LUKS Encryption,$([[ "$enable_luks" == "true" ]] && echo "Enabled" || echo "Disabled")
 SSH Server,$([[ "$enable_ssh" == "true" ]] && echo "Enabled" || echo "Disabled")
-VNC Access (wayvnc),$([[ "$enable_wayvnc" == "true" ]] && echo "Enabled" || echo "Disabled")"
+VNC Access (wayvnc),$([[ "$enable_wayvnc" == "true" ]] && echo "Enabled" || echo "Disabled")
+Keybinding Remap,$([[ "$remap_keybindings" == "true" ]] && echo "Enabled (CTRL+ALT bindings)" || echo "Disabled")"
 
   echo -e "$summary_table" | gum table -s "," -p | sed "s/^/${PADDING_LEFT_SPACES}/"
 
@@ -452,7 +466,8 @@ cat <<-_EOF_ >omarchy_advanced_state.json
     "install_profile": "$install_profile",
     "enable_luks": "$enable_luks",
     "enable_ssh": "$enable_ssh",
-    "enable_wayvnc": "$enable_wayvnc"
+    "enable_wayvnc": "$enable_wayvnc",
+    "remap_keybindings": "$remap_keybindings"
 }
 _EOF_
 
