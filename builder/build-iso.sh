@@ -2,12 +2,10 @@
 
 set -e
 
-PACMAN_COMMON_ARGS=(--disable-download-timeout)
-
 # Note that these are packages installed to the Arch container used to build the ISO.
 pacman-key --init
-pacman "${PACMAN_COMMON_ARGS[@]}" --noconfirm -Sy archlinux-keyring
-pacman "${PACMAN_COMMON_ARGS[@]}" --noconfirm -Sy archiso git sudo base-devel jq grub
+pacman --noconfirm -Sy archlinux-keyring
+pacman --noconfirm -Sy archiso git sudo base-devel jq grub
 
 # Setup build locations
 build_cache_dir="/var/cache"
@@ -50,7 +48,7 @@ all_packages+=($(grep -v '^#' /builder/archinstall.packages | grep -v '^$'))
 
 # Download all the packages to the offline mirror inside the ISO
 mkdir -p /tmp/offlinedb
-pacman "${PACMAN_COMMON_ARGS[@]}" --config /configs/pacman-online.conf --noconfirm -Syw "${all_packages[@]}" --cachedir $offline_mirror_dir/ --dbpath /tmp/offlinedb
+pacman --config /configs/pacman-online.conf --noconfirm -Syw "${all_packages[@]}" --cachedir $offline_mirror_dir/ --dbpath /tmp/offlinedb
 repo-add --new "$offline_mirror_dir/offline.db.tar.gz" "$offline_mirror_dir/"*.pkg.tar.zst
 
 # Create a symlink to the offline mirror instead of duplicating it.
