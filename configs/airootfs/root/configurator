@@ -32,8 +32,8 @@ notice() {
 step "Welcome to Omarchy Advanced Installation"
 
 # Show profile selection with detailed defaults
-gum style --border normal --margin "1 0 1 $PADDING_LEFT" --padding "1 2" "Workstation - Disk encryption (requires boot password), no SSH, no VNC
-VM - No disk encryption, SSH, VNC
+gum style --border normal --margin "1 0 1 $PADDING_LEFT" --padding "1 2" "Workstation - Disk encryption (requires boot password), no SSH, no VNC, keep Super keybindings
+VM - No disk encryption, SSH, VNC, remap keybindings to CTRL+ALT
 
 All options can be changed, these are just the defaults to save you time!
 Note: Login screen (greetd) is always enabled for security."
