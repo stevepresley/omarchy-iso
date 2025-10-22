@@ -25,12 +25,6 @@ LOG_FILE="release/omarchy-${TIMESTAMP}-${ARCH}-${INSTALLER_BRANCH//\//-}_BUILD_L
 echo "Building Omarchy ISO with Advanced Mode features..."
 echo ""
 
-# Clean up previous build artifacts to avoid corruption
-echo "Cleaning previous build cache..."
-sudo rm -rf work/
-sudo rm -rf ~/.cache/omarchy/
-echo ""
-
 # Set environment variables for the build
 export OMARCHY_INSTALLER_REPO="stevepresley/omarchy"
 export OMARCHY_INSTALLER_REF="feature/omarchy-advanced"
@@ -38,7 +32,7 @@ export OMARCHY_INSTALLER_REF="feature/omarchy-advanced"
 # Track start time
 START_TIME=$(date +%s)
 
-# Log commit info to both screen and file immediately
+# Log commit info to both screen and file immediately (BEFORE sudo commands)
 echo "=========================================="
 echo "Build Configuration & Current Commits:"
 echo "=========================================="
@@ -56,6 +50,12 @@ echo "  Installer Branch: feature/omarchy-advanced"
 echo "=========================================="
 echo ""
 echo "Starting build..."
+echo ""
+
+# Clean up previous build artifacts to avoid corruption
+echo "Cleaning previous build cache..."
+sudo rm -rf work/
+sudo rm -rf ~/.cache/omarchy/
 echo ""
 
 # Run the build with logging (tee shows output AND logs to file)
