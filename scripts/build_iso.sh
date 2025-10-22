@@ -17,7 +17,7 @@ echo "ISO Builder (omarchy-advanced-iso):"
 git log -1 --oneline
 echo ""
 echo "Omarchy Installer (omarchy-advanced, feature/omarchy-advanced):"
-(cd omarchy-advanced && git log -1 --oneline)
+(cd ../omarchy-advanced && git log -1 --oneline)
 echo "=========================================="
 echo ""
 
