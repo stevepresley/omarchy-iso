@@ -28,6 +28,13 @@ cp -r /configs/* $build_cache_dir/
 # Clone Omarchy itself
 git clone -b $OMARCHY_INSTALLER_REF https://github.com/$OMARCHY_INSTALLER_REPO.git "$build_cache_dir/airootfs/root/omarchy"
 
+# Log the commit being used
+echo "=========================================="
+echo "Building with omarchy-advanced commit:"
+cd "$build_cache_dir/airootfs/root/omarchy" && git log -1
+echo "=========================================="
+echo ""
+
 # Make log uploader available in the ISO too
 mkdir -p "$build_cache_dir/airootfs/usr/local/bin/"
 cp "$build_cache_dir/airootfs/root/omarchy/bin/omarchy-upload-log" "$build_cache_dir/airootfs/usr/local/bin/omarchy-upload-log"
