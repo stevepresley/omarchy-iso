@@ -24,21 +24,6 @@ LOG_FILE="release/omarchy-${TIMESTAMP}-${ARCH}-${INSTALLER_BRANCH//\//-}_BUILD_L
 
 echo "Building Omarchy ISO with Advanced Mode features..."
 echo ""
-echo "=========================================="
-echo "Build Configuration & Current Commits:"
-echo "=========================================="
-echo "ISO Builder (omarchy-advanced-iso):"
-git log -1 --oneline
-echo ""
-echo "Omarchy Installer (omarchy-advanced, feature/omarchy-advanced):"
-cd omarchy-advanced && git log -1 --oneline && cd ..
-echo "=========================================="
-echo ""
-echo "Configuration:"
-echo "  ISO Branch: feature/advanced-mode"
-echo "  Installer Repo: stevepresley/omarchy"
-echo "  Installer Branch: feature/omarchy-advanced"
-echo ""
 
 # Clean up previous build artifacts to avoid corruption
 echo "Cleaning previous build cache..."
@@ -55,7 +40,26 @@ START_TIME=$(date +%s)
 
 # Run the build with logging (tee shows output AND logs to file)
 # --no-boot-offer skips the interactive "Boot ISO?" prompt
-./bin/omarchy-iso-make --no-boot-offer 2>&1 | tee "$LOG_FILE"
+{
+  echo "=========================================="
+  echo "Build Configuration & Current Commits:"
+  echo "=========================================="
+  echo "ISO Builder (omarchy-advanced-iso):"
+  git log -1 --oneline
+  echo ""
+  echo "Omarchy Installer (omarchy-advanced, feature/omarchy-advanced):"
+  cd omarchy-advanced && git log -1 --oneline && cd ..
+  echo "=========================================="
+  echo ""
+  echo "Configuration:"
+  echo "  ISO Branch: feature/advanced-mode"
+  echo "  Installer Repo: stevepresley/omarchy"
+  echo "  Installer Branch: feature/omarchy-advanced"
+  echo ""
+  echo "Starting build..."
+  echo ""
+  ./bin/omarchy-iso-make --no-boot-offer
+} 2>&1 | tee "$LOG_FILE"
 BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
 # Track end time and calculate duration
