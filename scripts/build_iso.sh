@@ -24,6 +24,16 @@ LOG_FILE="release/omarchy-${TIMESTAMP}-${ARCH}-${INSTALLER_BRANCH//\//-}_BUILD_L
 
 echo "Building Omarchy ISO with Advanced Mode features..."
 echo ""
+echo "=========================================="
+echo "Build Configuration & Current Commits:"
+echo "=========================================="
+echo "ISO Builder (omarchy-advanced-iso):"
+git log -1 --oneline
+echo ""
+echo "Omarchy Installer (omarchy-advanced, feature/omarchy-advanced):"
+cd omarchy-advanced && git log -1 --oneline && cd ..
+echo "=========================================="
+echo ""
 echo "Configuration:"
 echo "  ISO Branch: feature/advanced-mode"
 echo "  Installer Repo: stevepresley/omarchy"
