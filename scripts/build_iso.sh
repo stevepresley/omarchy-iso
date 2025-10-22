@@ -38,28 +38,29 @@ export OMARCHY_INSTALLER_REF="feature/omarchy-advanced"
 # Track start time
 START_TIME=$(date +%s)
 
+# Log commit info to both screen and file immediately
+echo "=========================================="
+echo "Build Configuration & Current Commits:"
+echo "=========================================="
+echo "ISO Builder (omarchy-advanced-iso):"
+git log -1 --oneline | tee -a "$LOG_FILE"
+echo ""
+echo "Omarchy Installer (omarchy-advanced, feature/omarchy-advanced):"
+(cd omarchy-advanced && git log -1 --oneline) | tee -a "$LOG_FILE"
+echo ""
+echo "=========================================="
+echo "Configuration:"
+echo "  ISO Branch: feature/advanced-mode"
+echo "  Installer Repo: stevepresley/omarchy"
+echo "  Installer Branch: feature/omarchy-advanced"
+echo "=========================================="
+echo ""
+echo "Starting build..."
+echo ""
+
 # Run the build with logging (tee shows output AND logs to file)
 # --no-boot-offer skips the interactive "Boot ISO?" prompt
-{
-  echo "=========================================="
-  echo "Build Configuration & Current Commits:"
-  echo "=========================================="
-  echo "ISO Builder (omarchy-advanced-iso):"
-  git log -1 --oneline
-  echo ""
-  echo "Omarchy Installer (omarchy-advanced, feature/omarchy-advanced):"
-  cd omarchy-advanced && git log -1 --oneline && cd ..
-  echo "=========================================="
-  echo ""
-  echo "Configuration:"
-  echo "  ISO Branch: feature/advanced-mode"
-  echo "  Installer Repo: stevepresley/omarchy"
-  echo "  Installer Branch: feature/omarchy-advanced"
-  echo ""
-  echo "Starting build..."
-  echo ""
-  ./bin/omarchy-iso-make --no-boot-offer
-} 2>&1 | tee "$LOG_FILE"
+./bin/omarchy-iso-make --no-boot-offer 2>&1 | tee -a "$LOG_FILE"
 BUILD_EXIT_CODE=${PIPESTATUS[0]}
 
 # Track end time and calculate duration
