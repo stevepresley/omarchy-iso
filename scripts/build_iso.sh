@@ -1,12 +1,25 @@
 #!/usr/bin/env bash
 set -e
 
+# FIRST: Update repos
 cd ..
 cd omarchy-advanced
 git pull origin feature/omarchy-advanced
 cd ..
 cd omarchy-advanced-iso
 git pull origin feature/advanced-mode
+
+# SECOND: Log current commits immediately (before anything else)
+echo "=========================================="
+echo "Build Configuration & Current Commits:"
+echo "=========================================="
+echo "ISO Builder (omarchy-advanced-iso):"
+git log -1 --oneline
+echo ""
+echo "Omarchy Installer (omarchy-advanced, feature/omarchy-advanced):"
+(cd omarchy-advanced && git log -1 --oneline)
+echo "=========================================="
+echo ""
 
 # Build Omarchy ISO with Advanced Mode features
 # This script builds the ISO from the feature/advanced-mode branch
@@ -31,26 +44,6 @@ export OMARCHY_INSTALLER_REF="feature/omarchy-advanced"
 
 # Track start time
 START_TIME=$(date +%s)
-
-# Log commit info to both screen and file immediately (BEFORE sudo commands)
-echo "=========================================="
-echo "Build Configuration & Current Commits:"
-echo "=========================================="
-echo "ISO Builder (omarchy-advanced-iso):"
-git log -1 --oneline | tee -a "$LOG_FILE"
-echo ""
-echo "Omarchy Installer (omarchy-advanced, feature/omarchy-advanced):"
-(cd omarchy-advanced && git log -1 --oneline) | tee -a "$LOG_FILE"
-echo ""
-echo "=========================================="
-echo "Configuration:"
-echo "  ISO Branch: feature/advanced-mode"
-echo "  Installer Repo: stevepresley/omarchy"
-echo "  Installer Branch: feature/omarchy-advanced"
-echo "=========================================="
-echo ""
-echo "Starting build..."
-echo ""
 
 # Clean up previous build artifacts to avoid corruption
 echo "Cleaning previous build cache..."
