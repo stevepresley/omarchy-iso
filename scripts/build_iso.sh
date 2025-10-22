@@ -37,7 +37,7 @@ LOG_FILE="release/omarchy-${TIMESTAMP}-${ARCH}-${INSTALLER_BRANCH//\//-}_BUILD_L
   echo ""
   echo "Building Omarchy ISO with Advanced Mode features..."
   echo ""
-} | tee "$LOG_FILE"
+} | tee -a "$LOG_FILE"
 
 # Set environment variables for the build
 export OMARCHY_INSTALLER_REPO="stevepresley/omarchy"
